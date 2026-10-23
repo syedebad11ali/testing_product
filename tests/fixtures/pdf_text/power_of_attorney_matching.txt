@@ -1,0 +1,66 @@
+                    FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE
+
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program                                                                                          SAMPLE
+                                                                                                                               SEAL
+                                                                                                                                     l)
+                                                                                                                            (fictiona
+
+
+
+
+                                SYNTHETIC POWER OF ATTORNEY
+                                              SAMPLE / DEMO — Fictional Test Data
+
+POA No: TEST-POA-005                                                                            Registry: Synthetic Test Registry
+
+
+ PRINCIPAL
+
+  NAME                                        Ahmed Raza
+
+  CNIC                                        00000-0000000-0
+
+
+ ATTORNEY
+
+  NAME                                        Bilal Hassan
+
+  CNIC                                        00000-0000000-1
+
+
+ PROPERTY
+
+  PLOT NUMBER                                 34-C
+
+  SURVEY NUMBER                               SRV-TEST-001
+
+  ADDRESS                                     House 12, Example Street, Demo Block, Karachi
+
+
+ AUTHORIZATION
+
+  SCOPE                                       Synthetic test authorization for property matters
+
+
+ DOCUMENT
+
+  NUMBER                                      TEST-POA-005
+
+  DATE                                        01 July 2026
+
+  EXPIRY                                      01 July 2027
+
+
+
+
+            signature placeholder                      signature placeholder                        signature placeholder
+                 PRINCIPAL                                 ATTORNEY                                       WITNESS
+
+                                     SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+
+
+Doc ID: power_of_attorney_matching                                                  Page 1 of 1 — Generated for OCR test purposes only
+

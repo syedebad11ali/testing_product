@@ -1,0 +1,59 @@
+/* browse.css — Home: featured, areas, filters, property grid, CTA, empty state. Load order matters: see index.html. */
+/* Featured */
+.featured{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.fplaceholder{height:300px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));position:relative;display:flex;align-items:flex-end;padding:12px;}
+.fplaceholder .tag{background:rgba(255,255,255,.92);color:var(--teal-700);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.featured-body{padding:14px 16px 16px;}
+.ftitle{font-weight:700;font-size:16px;}
+.floc{color:var(--sub);font-size:13px;margin-top:2px;}
+.fprice{font-weight:700;color:var(--teal-700);font-size:17px;margin-top:8px;}
+.fmeta{font-size:12.5px;color:var(--sub);margin-top:2px;}
+.verif-pill{display:inline-flex;align-items:center;gap:5px;color:var(--ok);font-size:12px;font-weight:600;margin-top:8px;}
+.btn{border:none ;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:600;}
+.btn-primary{background:var(--teal-700);color:#fff;}
+.btn-outline{background:transparent;border:1.5px solid var(--teal-700);color:var(--teal-700);}
+.btn-block{width:100%;display:block;text-align:center;margin-top:12px;}
+
+/* Areas */
+.areas{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+.areas::-webkit-scrollbar{display:none;}
+.area-chip{flex-shrink:0;background:var(--teal-100);color:var(--teal-700);border:none;border-radius:14px;padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;}
+.area-chip.active{background:var(--teal-700);color:#fff;}
+
+/* filters row */
+.filters-row{display:flex;gap:8px;margin-bottom:14px;}
+.filters-row select{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:9px 8px;font-size:12.5px;}
+
+/* Property card grid */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:1200px;margin:0 auto;}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;}
+.pcard .thumb{height:260px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));position:relative;background-size:cover;background-position:center center;background-repeat:no-repeat;}
+.pcard .thumb .fav{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.88);display:flex;align-items:center;justify-content:center;border:none;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.pcard .thumb .type-tag{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.38);color:#fff;font-size:9.5px;padding:4px 9px;border-radius:8px;}
+.pcard .body{padding:12px 12px 13px;}
+.pcard .title{font-size:12.5px;font-weight:700;line-height:1.25;}
+.pcard .loc{font-size:11px;color:var(--sub);margin-top:2px;}
+.pcard .price{font-size:13px;font-weight:700;color:var(--teal-700);margin-top:5px;}
+.pcard .size{font-size:10.5px;color:var(--sub);margin-top:1px;}
+.pcard .vrow{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--ok);font-weight:600;margin-top:5px;}
+.pcard .vrow.mute{color:var(--mute);}
+.pcard button.viewbtn{margin-top:8px;width:100%;background:var(--teal-100);color:var(--teal-700);border:none;border-radius:8px;padding:7px;font-size:11.5px;font-weight:700;}
+
+@media (max-width: 900px){
+  .pcard .thumb{height:220px;}
+}
+
+@media (max-width: 640px){
+  .grid{grid-template-columns:1fr;}
+  .pcard .thumb{height:180px;}
+}
+
+/* CTA banner */
+.cta{background:var(--teal-900);color:#fff;border-radius:var(--r-lg);padding:18px;margin-top:24px;}
+.cta h3{margin:0 0 6px;font-size:16px;}
+.cta p{margin:0 0 12px;font-size:13px;opacity:.85;line-height:1.4;}
+.cta .btn-primary{background:var(--teal-500);}
+
+/* Empty */
+.empty{text-align:center;padding:30px 10px;color:var(--sub);font-size:13.5px;}
+

@@ -1,0 +1,46 @@
+FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+
+LTERED FOR TESTING
+
+KARACHI PROPERTY TRUST
+
+Synthetic Document Testing Program
+
+SYNTHETIC POWER OF ATTORNEY
+
+SAMPLE / DEMO — Fictional Test Data
+POA No: TEST-POA-005 Registry: Synthetic Test Registry
+PRINCIPAL
+
+NAME Ahmed Raza
+
+cnic 00000-0000000-0
+
+ATTORNEY
+
+NAME { Zubair Khan
+cnic 00000-0000000- 1
+
+PROPERTY
+
+PLOT NUMBER 34-€
+
+SURVEY NUMBER SRV-TEST-001
+
+ADDRESS House 12, Example Street, Demo Block, Karachi
+
+AUTHORIZATION
+
+SCOPE synthetic test authorization for property matters
+DOCUMENT
+NUMBER TEST-POA-005
+DATE 1 July 2026
+EXPIRY 1 July 2027
+PRINCIPAL ATTORNEY Witness
+
+‘SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+Generated for
+
+of attorney_mismatch
+

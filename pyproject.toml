@@ -1,0 +1,26 @@
+[project]
+name = "karachi-property-trust"
+version = "1.0.0"
+description = "Karachi Property Trust: static frontend + Flask backend (Gemini + offline fallback + price model)."
+requires-python = ">=3.12,<3.13"
+
+# Single source of truth for production dependencies (Vercel installs from here).
+# scikit-learn is pinned to the exact version that serialised backend/ml/price_model.joblib
+# (sklearn_version 1.9.1). numpy/pandas/scipy/joblib/threadpoolctl are pinned to the
+# versions the model + chatbot code were verified against. Do not bump these without
+# running `npm run test:all` (see docs/DEVELOPMENT.md).
+dependencies = [
+    "Flask==3.1.3",
+    "python-dotenv==1.2.2",
+    "google-genai>=2.14,<3",
+    "pandas==3.0.2",
+    "numpy==2.4.4",
+    "scikit-learn==1.9.1",
+    "scipy==1.17.1",
+    "joblib==1.5.3",
+    "threadpoolctl==3.6.0",
+]
+
+# One Flask app: module backend/app.py, variable `app`  ->  "backend.app:app"
+[tool.vercel]
+entrypoint = "backend.app:app"

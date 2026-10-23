@@ -1,0 +1,35 @@
+{
+  "A": {
+    "property_id": "DEMO-KPT-001",
+    "owner": "Ahmed Raza",
+    "cnic": "00000-0000000-0",
+    "plot": "34-C",
+    "survey": "SRV-TEST-001",
+    "area": "DHA Phase 6",
+    "size": "500 Sq. Yards",
+    "address": "House 12, Example Street, Demo Block, Karachi",
+    "authority": "Synthetic Property Authority"
+  },
+  "B": {
+    "property_id": "DEMO-KPT-002",
+    "owner": "Bilal Hassan",
+    "cnic": "00000-0000000-1",
+    "plot": "52-A",
+    "survey": "SRV-TEST-002",
+    "area": "Gulshan-e-Iqbal",
+    "size": "240 Sq. Yards",
+    "address": "House 25, Example Avenue, Demo Block, Karachi",
+    "authority": "Synthetic Property Authority"
+  },
+  "C": {
+    "property_id": "DEMO-KPT-003",
+    "owner": "Sara Ahmed",
+    "cnic": "00000-0000000-2",
+    "plot": "17-B",
+    "survey": "SRV-TEST-003",
+    "area": "Scheme 33",
+    "size": "400 Sq. Yards",
+    "address": "Plot 17-B, Example Road, Demo Block, Karachi",
+    "authority": "Synthetic Property Authority"
+  }
+}

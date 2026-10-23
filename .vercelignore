@@ -1,0 +1,12 @@
+# Not needed at runtime; keeps the deployment (and the Flask function bundle) small.
+tests/
+docs/
+scripts/
+notebooks/
+data-source/
+node_modules/
+package.json
+**/__pycache__/
+*.pyc
+.env
+.env*

@@ -1,0 +1,39 @@
+FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALL
+
+LTERED FOR TESTING
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program
+
+SYNTHETIC BUILDING APPROVAL
+
+SAMPLE / DEMO — Fictional Test Data
+
+Approval No: TEST-BA-006 Authority: Synthetic Property Authority
+
+APPROVAL DETAILS.
+
+OWNER Ahmed Raza
+
+NIC / REFERENCE 00000-0000000-0
+
+PLOT NUMBER 34-€
+
+SURVEY NUMBER ‘SRV-TEST-001
+
+ADDRESS House 12, Example Street, Demo Block, Karachi
+AUTHORITY synthetic Property Authority
+
+APPROVAL NUMBER TEST-BA-006
+
+APPROVAL DATE 05 May 2026
+
+BUILDING TYPE Residential - G+2
+
+APPROVED AREA | 900 Sq. Yards (exceeds record)
+
+‘OWNER APPROVING OFFICER WITNESS
+‘SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+Doc ID: building approval_mismatch Page 1 of 1 — Generated for OCR test purpi
+

@@ -1,0 +1,53 @@
+    FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+                            ALTERED FOR TESTING
+
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program                                                                                     SAMPLE
+                                                                                                                          SEAL
+                                                                                                                                l)
+                                                                                                                       (fictiona
+
+
+
+
+                                    SYNTHETIC TEST LEASE DEED
+                                        NOT A LEGAL DOCUMENT — Fictional Test Data
+
+Lease No: TEST-LD-002                                                                      Registry: Synthetic Test Registry
+
+
+ LEASE DETAILS
+
+ LESSOR                                      Bilal Hassan
+
+ LESSEE                                      Test Tenant Name
+
+ CNIC (LESSOR)                               00000-0000000-1
+
+ PLOT NUMBER                                 52-A
+
+ SURVEY NUMBER                               SRV-TEST-999
+
+ ADDRESS                                     House 25, Example Avenue, Demo Block, Karachi
+
+ LEASE NUMBER                                TEST-LD-002
+
+ START DATE                                  01 January 2026
+
+ END DATE                                    31 December 2028
+
+ AUTHORITY                                   Synthetic Property Authority
+
+
+
+
+            signature placeholder                    signature placeholder                     signature placeholder
+                  LESSOR                                   LESSEE                                    WITNESS
+
+                                    SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+
+
+Doc ID: lease_deed_mismatch                                                    Page 1 of 1 — Generated for OCR test purposes only
+

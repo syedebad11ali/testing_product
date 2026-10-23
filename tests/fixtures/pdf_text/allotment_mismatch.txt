@@ -1,0 +1,51 @@
+     FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+                             ALTERED FOR TESTING
+
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program                                                                                          SAMPLE
+                                                                                                                               SEAL
+                                                                                                                                     l)
+                                                                                                                            (fictiona
+
+
+
+
+                                    SYNTHETIC ALLOTMENT LETTER
+                                              SAMPLE / DEMO — Fictional Test Data
+
+Letter No: TEST-AL-003                                                                   Authority: Synthetic Property Authority
+
+
+ ALLOTMENT DETAILS
+
+  ALLOTTEE NAME                               Sara Ahmed
+
+  CNIC                                        00000-0000000-2
+
+  PLOT NUMBER                                 17-Z
+
+  SCHEME                                      Scheme 33
+
+  CATEGORY                                    Residential
+
+  SIZE                                        400 Sq. Yards
+
+  ALLOTMENT NUMBER                            TEST-AL-003
+
+  DATE                                        12 February 2026
+
+  AUTHORITY                                   Synthetic Property Authority
+
+
+
+
+            signature placeholder                      signature placeholder                        signature placeholder
+                 ALLOTTEE                             AUTHORITY OFFICER                                   WITNESS
+
+                                     SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+
+
+Doc ID: allotment_mismatch                                                          Page 1 of 1 — Generated for OCR test purposes only
+

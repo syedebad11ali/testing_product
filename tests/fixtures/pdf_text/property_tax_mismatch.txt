@@ -1,0 +1,51 @@
+     FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+                             ALTERED FOR TESTING
+
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program                                                                                         SAMPLE
+                                                                                                                              SEAL
+                                                                                                                                    l)
+                                                                                                                           (fictiona
+
+
+
+
+                           SYNTHETIC PROPERTY TAX STATEMENT
+                                             SAMPLE / DEMO — Fictional Test Data
+
+Receipt No: TEST-TX-007                                                                 Authority: Synthetic Property Authority
+
+
+ TAX RECORD
+
+  PROPERTY ID                                DEMO-KPT-001
+
+  OWNER                                      Ahmed Raza
+
+  CNIC / REFERENCE                           00000-0000000-0
+
+  PLOT NUMBER                                34-C
+
+  ADDRESS                                    House 12, Example Street, Demo Block, Karachi
+
+  TAX PERIOD                                 2025 - 2026
+
+  AMOUNT                                     PKR 45,000 (fictional)
+
+  PAYMENT STATUS                             OVERDUE — DOES NOT MATCH RECORD
+
+  RECEIPT NUMBER                             TEST-TX-007
+
+
+
+
+            signature placeholder                     signature placeholder                        signature placeholder
+                   PAYER                                 TAX OFFICER                                     WITNESS
+
+                                    SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+
+
+Doc ID: property_tax_mismatch                                                      Page 1 of 1 — Generated for OCR test purposes only
+

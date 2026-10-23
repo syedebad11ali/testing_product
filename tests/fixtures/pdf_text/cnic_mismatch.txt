@@ -1,0 +1,45 @@
+     FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+                             ALTERED FOR TESTING
+
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program                                                                                     SAMPLE
+                                                                                                                          SEAL
+                                                                                                                                l)
+                                                                                                                       (fictiona
+
+
+
+
+                                     SYNTHETIC IDENTITY CARD
+                                             SAMPLE / DEMO — NOT A REAL CNIC
+
+Card No: TEST-ID-0001                                                                                     Category: Test Data
+
+
+ IDENTITY DETAILS
+
+  NAME                                       Ahmed Raza
+
+  FATHER / HUSBAND NAME                      Test Father Name
+
+  CNIC NUMBER                                00000-0000000-9
+
+  DATE OF BIRTH                              01-01-1985
+
+  ISSUE DATE                                 05-03-2020
+
+  EXPIRY DATE                                05-03-2030
+
+
+
+
+            signature placeholder                    signature placeholder                     signature placeholder
+               CARD HOLDER                            ISSUING OFFICER                                WITNESS
+
+                                    SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+
+
+Doc ID: cnic_mismatch                                                          Page 1 of 1 — Generated for OCR test purposes only
+

@@ -1,0 +1,49 @@
+     FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+                             ALTERED FOR TESTING
+
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program                                                                                            SAMPLE
+                                                                                                                                 SEAL
+                                                                                                                                       l)
+                                                                                                                              (fictiona
+
+
+
+
+DEMO ELECTRIC SERVICE — SYNTHETIC UTILITY TEST RECORD
+                                     SAMPLE / DEMO — Fictional Test Data, Not a Real Utility Bill
+
+Bill No: TEST-UT-008                                                                          Service: Synthetic Utility Test Board
+
+
+ BILL DETAILS
+
+  CONSUMER NUMBER                               TEST-UT-008
+
+  CUSTOMER NAME                                 Ahmed Raza
+
+  PROPERTY ADDRESS                              House 99, Wrong Street, Demo Block, Karachi
+
+  BILLING PERIOD                                September 2026
+
+  PREVIOUS READING                              1200 units
+
+  CURRENT READING                               1340 units
+
+  AMOUNT                                        PKR 8,400 (fictional)
+
+  OUTSTANDING AMOUNT                            PKR 0.00
+
+
+
+
+             signature placeholder                       signature placeholder                        signature placeholder
+                 CUSTOMER                                  BILLING OFFICER                                     —
+
+                                     SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+
+
+Doc ID: utility_mismatch                                                              Page 1 of 1 — Generated for OCR test purposes only
+

@@ -1,0 +1,64 @@
+    FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+                            ALTERED FOR TESTING
+
+
+KARACHI PROPERTY TRUST
+Synthetic Document Testing Program                                                                                     SAMPLE
+                                                                                                                          SEAL
+                                                                                                                                l)
+                                                                                                                       (fictiona
+
+
+
+
+                                    SYNTHETIC TEST SALE DEED
+                                        NOT A LEGAL DOCUMENT — Fictional Test Data
+
+Deed No: TEST-SD-001                                                                       Registry: Synthetic Test Registry
+
+
+ SELLER
+
+ NAME                                        Ahmed Raza
+
+ CNIC                                        00000-0000000-0
+
+
+ BUYER
+
+ NAME                                        Bilal Hassan
+
+ CNIC                                        00000-0000000-1
+
+
+ PROPERTY
+
+ PLOT NUMBER                                 99-Z
+
+ SURVEY NUMBER                               SRV-TEST-001
+
+ AREA                                        DHA Phase 6
+
+ SIZE                                        500 Sq. Yards
+
+ ADDRESS                                     House 12, Example Street, Demo Block, Karachi
+
+
+ TRANSACTION
+
+ SALE DATE                                   10 September 2026
+
+ DOCUMENT NUMBER                             TEST-SD-001
+
+
+
+
+            signature placeholder                    signature placeholder                     signature placeholder
+                  SELLER                                   BUYER                                   REGISTRAR
+
+                                    SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+
+
+Doc ID: sale_deed_mismatch                                                     Page 1 of 1 — Generated for OCR test purposes only
+

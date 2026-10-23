@@ -1,0 +1,36 @@
+FICTIONAL TEST DOCUMENT — NOT VALID FOR OFFICIAL USE — INTENTIONALLY
+
+ALTERED FOR TESTING
+
+KARACHI PROPERTY TRUST
+
+Synthetic Document Testing Program
+
+SYNTHETIC TEST LEASE DEED
+
+NOT A LEGAL DOCUMENT — Fictional Test Data
+
+Lease No: TEST-LD-002 Registry: Synthetic Test Registry
+
+LEASE DETAILS
+
+LESSOR Bilal Hassan
+LESSEE Test Tenant Name
+‘NIC (LESSOR) 00000-0000000-1
+PLOT NUMBER 52-8
+SURVEY NUMBER ‘SRV-TEST-999
+ADDRESS House 25, Example Avenue, Demo Block, Karachi
+LEASE NUMBER TEST-LD-002
+START DATE 1 January 2026
+END DATE 31 December 2028
+AUTHORITY synthetic Property Authority
+LESSOR LESSEE WITNESS
+
+‘SAMPLE / DEMO — FICTIONAL DATA — NOT A REAL DOCUMENT
+
+— Generated for OCR test purp:
+
+Doc ID: lease deed _mismat
+
+Page 1
+

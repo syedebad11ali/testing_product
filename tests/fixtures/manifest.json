@@ -1,0 +1,423 @@
+[
+  {
+    "file": "cnic_matching.png/.pdf",
+    "type": "CNIC",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "cnic_mismatch.png/.pdf",
+    "type": "CNIC",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "CNIC"
+    ],
+    "document_values_if_altered": {
+      "CNIC": "00000-0000000-9"
+    },
+    "notes": "CNIC number altered from expected value"
+  },
+  {
+    "file": "property_matching.png/.pdf",
+    "type": "Property Ownership Paper",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "property_mismatch.png/.pdf",
+    "type": "Property Ownership Paper",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Plot Number"
+    ],
+    "document_values_if_altered": {
+      "Plot Number": "52-A"
+    },
+    "notes": "Plot number altered from expected value"
+  },
+  {
+    "file": "sale_deed_matching.png/.pdf",
+    "type": "Sale Deed",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "sale_deed_mismatch.png/.pdf",
+    "type": "Sale Deed",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Plot Number"
+    ],
+    "document_values_if_altered": {
+      "Plot Number": "99-Z"
+    },
+    "notes": "Plot number altered from expected value"
+  },
+  {
+    "file": "lease_deed_matching.png/.pdf",
+    "type": "Lease Deed",
+    "property_id": "DEMO-KPT-002",
+    "expected_owner": "Bilal Hassan",
+    "expected_plot": "52-A",
+    "expected_cnic": "00000-0000000-1",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "lease_deed_mismatch.png/.pdf",
+    "type": "Lease Deed",
+    "property_id": "DEMO-KPT-002",
+    "expected_owner": "Bilal Hassan",
+    "expected_plot": "52-A",
+    "expected_cnic": "00000-0000000-1",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Survey Number"
+    ],
+    "document_values_if_altered": {
+      "Survey Number": "SRV-TEST-999"
+    },
+    "notes": "Survey number altered from expected value"
+  },
+  {
+    "file": "allotment_matching.png/.pdf",
+    "type": "Allotment Letter",
+    "property_id": "DEMO-KPT-003",
+    "expected_owner": "Sara Ahmed",
+    "expected_plot": "17-B",
+    "expected_cnic": "00000-0000000-2",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "allotment_mismatch.png/.pdf",
+    "type": "Allotment Letter",
+    "property_id": "DEMO-KPT-003",
+    "expected_owner": "Sara Ahmed",
+    "expected_plot": "17-B",
+    "expected_cnic": "00000-0000000-2",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Plot Number"
+    ],
+    "document_values_if_altered": {
+      "Plot Number": "17-Z"
+    },
+    "notes": "Plot number altered from expected value"
+  },
+  {
+    "file": "transfer_order_matching.png/.pdf",
+    "type": "Transfer Order",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "transfer_order_mismatch.png/.pdf",
+    "type": "Transfer Order",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Plot Number"
+    ],
+    "document_values_if_altered": {
+      "Plot Number": "60-X"
+    },
+    "notes": "Plot number altered from expected value"
+  },
+  {
+    "file": "noc_matching.png/.pdf",
+    "type": "NOC",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "noc_mismatch.png/.pdf",
+    "type": "NOC",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "CNIC"
+    ],
+    "document_values_if_altered": {
+      "CNIC": "00000-0000000-7"
+    },
+    "notes": "CNIC altered from expected value"
+  },
+  {
+    "file": "power_of_attorney_matching.png/.pdf",
+    "type": "Power of Attorney",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "power_of_attorney_mismatch.png/.pdf",
+    "type": "Power of Attorney",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Attorney Name"
+    ],
+    "document_values_if_altered": {
+      "Attorney Name": "Zubair Khan"
+    },
+    "notes": "Attorney name altered from expected value"
+  },
+  {
+    "file": "building_approval_matching.png/.pdf",
+    "type": "Building Approval",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "building_approval_mismatch.png/.pdf",
+    "type": "Building Approval",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Approved Area"
+    ],
+    "document_values_if_altered": {
+      "Approved Area": "900 Sq. Yards (exceeds record)"
+    },
+    "notes": "Approved area inconsistent with property size on record (500 Sq. Yards)"
+  },
+  {
+    "file": "property_tax_matching.png/.pdf",
+    "type": "Property Tax Document",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "property_tax_mismatch.png/.pdf",
+    "type": "Property Tax Document",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Payment Status"
+    ],
+    "document_values_if_altered": {
+      "Payment Status": "OVERDUE \u2014 DOES NOT MATCH RECORD"
+    },
+    "notes": "Payment status altered to conflict with expected record"
+  },
+  {
+    "file": "utility_matching.png/.pdf",
+    "type": "Utility Bill",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": ""
+  },
+  {
+    "file": "utility_mismatch.png/.pdf",
+    "type": "Utility Bill",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Property Address"
+    ],
+    "document_values_if_altered": {
+      "Property Address": "House 99, Wrong Street, Demo Block, Karachi"
+    },
+    "notes": "Address altered from expected value"
+  },
+  {
+    "file": "altered_name_mismatch.png/.pdf",
+    "type": "Property Record (Name Mismatch)",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Owner"
+    ],
+    "document_values_if_altered": {
+      "Owner": "Bilal Hassan"
+    },
+    "notes": "Owner name swapped with a different property's owner"
+  },
+  {
+    "file": "altered_plot_mismatch.png/.pdf",
+    "type": "Property Record (Plot Mismatch)",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Plot Number"
+    ],
+    "document_values_if_altered": {
+      "Plot Number": "52-A"
+    },
+    "notes": "Plot number swapped with a different property's plot"
+  },
+  {
+    "file": "altered_cnic_mismatch.png/.pdf",
+    "type": "Property Record (CNIC Mismatch)",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "CNIC"
+    ],
+    "document_values_if_altered": {
+      "CNIC": "00000-0000000-1"
+    },
+    "notes": "CNIC swapped with a different property owner's CNIC"
+  },
+  {
+    "file": "altered_multiple_mismatch.png/.pdf",
+    "type": "Property Record (Multiple Mismatch)",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED",
+    "intentionally_altered_fields": [
+      "Owner",
+      "CNIC",
+      "Plot Number"
+    ],
+    "document_values_if_altered": {
+      "Owner": "Bilal Hassan",
+      "CNIC": "00000-0000000-1",
+      "Plot Number": "52-A"
+    },
+    "notes": "Owner, CNIC, and plot number all swapped with Property B's values"
+  },
+  {
+    "file": "altered_missing_plot.png/.pdf",
+    "type": "Property Record (Missing Plot Number)",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "INSUFFICIENT INFORMATION",
+    "intentionally_altered_fields": [
+      "Plot Number"
+    ],
+    "document_values_if_altered": {
+      "Plot Number": "[blank]"
+    },
+    "notes": "Plot number field intentionally left blank to test missing-field handling"
+  },
+  {
+    "file": "altered_conflicting_info.png/.pdf",
+    "type": "Property Record (Internal Conflict)",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "DOCUMENT NOT VERIFIED \u2014 INTERNAL CONFLICT",
+    "intentionally_altered_fields": [
+      "Plot Number (header vs body)"
+    ],
+    "document_values_if_altered": {
+      "Header": "34-C",
+      "Body": "52-A"
+    },
+    "notes": "Header reference states plot 34-C while the body field states plot 52-A"
+  },
+  {
+    "file": "ocr_challenge.jpg",
+    "type": "Property Ownership Paper (OCR Challenge)",
+    "property_id": "DEMO-KPT-001",
+    "expected_owner": "Ahmed Raza",
+    "expected_plot": "34-C",
+    "expected_cnic": "00000-0000000-0",
+    "expected_result": "VERIFIED (if OCR succeeds)",
+    "intentionally_altered_fields": [],
+    "document_values_if_altered": {},
+    "notes": "Same content as property_matching but with slight rotation (2.5\u00b0) and heavier JPEG compression to test OCR robustness; still intended to remain readable"
+  }
+]

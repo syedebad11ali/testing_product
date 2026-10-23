@@ -1,0 +1,131 @@
+/* camera.css — Camera capture and full-viewport camera layout. Load order matters: see index.html. */
+/* Camera document capture */
+.cam-frame-label{
+  position:absolute;
+  left:50%;
+  bottom:-34px;
+  transform:translateX(-50%);
+  width:max-content;
+  max-width:90%;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.52);
+  color:#fff;
+  font-size:10.5px;
+  font-weight:600;
+  text-align:center;
+  white-space:nowrap;
+}
+.cam-secondary-actions{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+.camera-help-card{
+  margin:12px 0;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  background:var(--teal-100);
+  border-radius:var(--r-md);
+  color:var(--sub);
+  font-size:11.5px;
+  line-height:1.5;
+}
+.camera-help-card strong{
+  display:block;
+  color:var(--text);
+  margin-bottom:3px;
+  font-size:12px;
+}
+.camera-help-card span{display:block;}
+.cam-native-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.camera-review-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:12px;
+}
+.camera-review-meta{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  margin-top:10px;
+  color:var(--sub);
+  font-size:11.5px;
+  line-height:1.45;
+}
+.camera-review-meta strong{color:var(--text);font-size:13px;}
+@media (max-width:480px){
+  .cam-controls{gap:22px;}
+  .cam-frame-label{font-size:9.5px;bottom:-30px;}
+}
+
+/* ---------- Full-viewport camera layout ----------
+   The live camera, permission/denied/unavailable states, and the
+   capture-review screen are rendered inside .cam-fullscreen: a fixed,
+   full-viewport flex column. The video/preview area flexes to fill
+   whatever space is left over (flex:1 1 auto; min-height:0) instead of
+   claiming a fixed aspect-ratio box, so the capture button, close
+   button, switch button and fallback links always stay on-screen and
+   reachable on short phones (e.g. 320x568) without any page scrolling.
+   This sits above the topnav/chat FAB/drawer (z-index 80) so those
+   floating elements don't visually intrude on the camera. */
+/* Suppress the underlying page's own scrollable height while a
+   full-viewport camera screen is open (see body.cam-active toggle in
+   app.js), so there is no pointless empty scroll behind the fixed
+   overlay. */
+body.cam-active{overflow:hidden;}
+body.cam-active .wrap{min-height:0;}
+
+.cam-fullscreen{
+  position:fixed; inset:0; z-index:80;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.cam-topbar{
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px;
+  background:linear-gradient(135deg,var(--brand-start),var(--brand-end));
+  color:#fff;
+}
+.cam-topbar .icon-btn{background:rgba(255,255,255,.18);flex-shrink:0;}
+.cam-topbar-text{flex:1;min-width:0;}
+.cam-topbar-title{font-weight:700;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cam-topbar-sub{font-size:11px;opacity:.85;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+.cam-fullscreen-body{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column;
+  padding:12px 14px;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Live viewfinder: fill remaining space instead of a fixed aspect box */
+.cam-fullscreen .cam-wrap{
+  flex:1 1 auto; min-height:140px; max-height:none;
+  aspect-ratio:auto; width:100%; margin-top:0;
+}
+.cam-fullscreen .cam-hint{flex:0 0 auto;margin-top:10px;}
+.cam-fullscreen .cam-controls{flex:0 0 auto;margin-top:12px;}
+.cam-fullscreen .cam-secondary-actions{flex:0 0 auto;margin-top:10px;margin-bottom:2px;}
+
+/* Review screen: preview image flexes, Retake / Use This Document stay pinned */
+.cam-fullscreen .camera-review-card{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+.cam-fullscreen .doc-preview-img{flex:1 1 auto;min-height:0;max-height:none;width:100%;height:100%;margin-top:0;}
+.cam-fullscreen .camera-review-meta{flex:0 0 auto;}
+.cam-fullscreen .action-row{flex:0 0 auto;margin-top:12px;}
+
+/* Card-based states (permission / denied / unavailable / poor-quality) */
+.cam-fullscreen .doc-option-card{margin-top:4px;flex-shrink:0;}

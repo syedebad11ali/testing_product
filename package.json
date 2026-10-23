@@ -1,0 +1,14 @@
+{
+  "name": "karachi-property-trust",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Karachi Property Trust: static frontend (native ES modules, no build step) + Flask backend.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test \"tests/frontend/*.test.js\"",
+    "test:py": "python -m unittest discover -s tests/backend -t . -v",
+    "test:all": "npm test && npm run test:py",
+    "start": "python -m backend.app"
+  }
+}
