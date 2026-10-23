@@ -10,7 +10,7 @@ import { nav } from '../app/router.js';
 import { closeChat, openChat } from '../features/chat.js';
 import { closeDrawer, openDrawer } from '../features/drawer.js';
 import { renderList, scrollToGrid, setArea, setSearch, setSort, setTypeFilter, toggleSave } from '../features/home.js';
-import { loadOwnerVerificationData, lookupOwnerProperty, renderOwnerForecast, setOwnerForecastYears, setOwnerPropertyId } from '../features/ownerVerification.js';
+import { checkOwnerClaim, loadOwnerVerificationData, lookupOwnerProperty, setOwnerClaim, renderOwnerForecast, setOwnerForecastYears, setOwnerPropertyId } from '../features/ownerVerification.js';
 import { hidePromo } from '../features/promo.js';
 import { handleDocUpload, saveManualInfo } from '../features/property.js';
 import { toggleTheme } from '../features/theme.js';
@@ -20,6 +20,7 @@ import { closeNotVerifiedModal } from '../features/verifyDocument/views.js';
 
 Object.assign(window, {
   captureDocumentFrame,
+  checkOwnerClaim,
   closeChat,
   closeDocumentCamera,
   closeDrawer,
@@ -52,6 +53,7 @@ Object.assign(window, {
   saveManualInfo,
   scrollToGrid,
   setArea,
+  setOwnerClaim,
   setOwnerForecastYears,
   setOwnerPropertyId,
   setSearch,

@@ -29,6 +29,20 @@ Always `{ "error": "<message>", "code": "<code>" }`.
 
 CORS: same-origin by default; set `ALLOWED_ORIGINS` to allow other sites.
 
+## `POST /api/v1/verification/check`
+Compares a claimed owner name with the registered owner **on the server**. Owner names are never returned.
+
+Request: `{"property_id": "DEMO-KPT-8103", "owner_name": "Full Name"}` (both required text; id ≤ 40, name ≤ 120 chars).
+Response: `{"result": "match" | "mismatch" | "unable_to_verify", "indicative": true, "note": "…"}`.
+Errors: `400 invalid_json / invalid_property_id / invalid_owner_name`, `429 rate_limited` (see `VERIFY_RATE_LIMIT_PER_MIN`).
+Auth: **none yet** (planned: logged-in users only, phase 4).
+
+## `GET /api/v1/health` and `/health/detail`
+Public `health` returns only `{"status":"ok"}`. `health/detail` (Bearer `HEALTH_DETAIL_TOKEN`) returns model, record counts and real startup errors; without the token it is a 404.
+
+## Headers on every response
+`X-Request-ID` (also in every error body as `request_id`), CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP/CORP. `/api/*` is `Cache-Control: no-store`. `429` carries `Retry-After`.
+
 ## Adding an endpoint
 1. Create `backend/api/<resource>.py` with `bp = Blueprint("<resource>", __name__)`.
 2. Add the module to `RESOURCES` in `backend/api/__init__.py` (it is mounted at both prefixes).

@@ -5,5 +5,17 @@
       "maxDuration": 60,
       "excludeFiles": "public/**"
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-site" },
+        { "key": "Content-Security-Policy", "value": "default-src 'none'; img-src 'self' data:; style-src 'none'; frame-ancestors 'none'" }
+      ]
+    }
+  ]
 }

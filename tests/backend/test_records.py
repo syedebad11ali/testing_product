@@ -65,7 +65,7 @@ class ConfigTests(unittest.TestCase):
 
 
 class DatasetSyncTests(unittest.TestCase):
-    def test_backend_and_public_datasets_match(self):
+    def test_public_datasets_match_sanitised_source(self):
         import subprocess, sys
         root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         r = subprocess.run([sys.executable, os.path.join(root, "scripts", "sync_datasets.py"), "--check"], capture_output=True, text=True)

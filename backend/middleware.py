@@ -1,36 +1,32 @@
 """Cross-cutting HTTP concerns: CORS and per-IP rate limiting."""
 from __future__ import annotations
 
-import threading
-import time
-from collections import defaultdict, deque
-
 from flask import Flask, request
 
 from backend.config import Settings
 from backend.errors import ApiError
+from backend.security.ratelimit_store import MemoryStore, Store, UpstashStore
+
+
+def build_store(settings: Settings) -> Store:
+    """Shared Redis store when configured (production), otherwise per-process memory."""
+    if settings.redis_rest_url and settings.redis_rest_token:
+        return UpstashStore(settings.redis_rest_url, settings.redis_rest_token)
+    return MemoryStore()
 
 
 class RateLimiter:
-    """Sliding-window limiter, in-memory (per warm instance). Thread-safe and self-pruning."""
+    """Fixed-window limiter on top of a pluggable counter store (memory or Upstash Redis)."""
 
-    def __init__(self, limit: int, window_s: int = 60):
-        self.limit, self.window = limit, window_s
-        self._hits: dict[str, deque] = defaultdict(deque)
-        self._lock = threading.Lock()
+    def __init__(self, limit: int, window_s: int = 60, store: Store | None = None, name: str = "rl"):
+        self.limit, self.window, self.name = limit, window_s, name
+        self.store = store or MemoryStore()
 
     def check(self, key: str) -> None:
-        now = time.time()
-        with self._lock:
-            q = self._hits[key]
-            while q and now - q[0] > self.window:
-                q.popleft()
-            if len(q) >= self.limit:
-                raise ApiError("Too many messages. Please wait a moment.", 429, "rate_limited")
-            q.append(now)
-            if len(self._hits) > 5000:  # drop idle keys so the dict cannot grow without bound
-                for k in [k for k, v in self._hits.items() if not v or now - v[-1] > self.window]:
-                    del self._hits[k]
+        count, retry_after = self.store.hit(f"{self.name}:{key}", self.window)
+        if count > self.limit:
+            raise ApiError("Too many requests. Please wait a moment.", 429, "rate_limited",
+                           headers={"Retry-After": str(retry_after)})
 
 
 def register_cors(app: Flask, settings: Settings) -> None:

@@ -18,19 +18,20 @@ log = logging.getLogger("chatbot")
 class ApiError(Exception):
     """Raise from a route/service to return a clean JSON error."""
 
-    def __init__(self, message: str, status: int = 400, code: str = "bad_request"):
+    def __init__(self, message: str, status: int = 400, code: str = "bad_request", headers: dict | None = None):
         super().__init__(message)
-        self.message, self.status, self.code = message, status, code
+        self.message, self.status, self.code, self.headers = message, status, code, headers or {}
 
 
 def _payload(message: str, code: str, **extra):
-    return {"error": message, "code": code, **extra}
+    from flask import g
+    return {"error": message, "code": code, "request_id": getattr(g, "request_id", None), **extra}
 
 
 def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(ApiError)
     def _api_error(e: ApiError):
-        return jsonify(_payload(e.message, e.code)), e.status
+        return jsonify(_payload(e.message, e.code)), e.status, e.headers
 
     @app.errorhandler(HTTPException)
     def _http_error(e: HTTPException):
@@ -43,6 +44,6 @@ def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(Exception)
     def _unhandled(e: Exception):
         error_id = uuid.uuid4().hex[:8]
-        log.exception("Unhandled error [%s]", error_id)
+        log.exception("Unhandled error [%s] request_id=%s", error_id, __import__("flask").g.get("request_id"))
         return jsonify(_payload("Something went wrong on our side. Please try again.",
                                 "internal_error", error_id=error_id)), 500

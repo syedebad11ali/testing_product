@@ -31,3 +31,14 @@
 8. **Handlers:** five inline handlers that assigned to globals (`state.search=…`, `ownerVerificationId=…`) are now named functions (`setSearch`, `setOwnerPropertyId`, …).
 
 Verified identical: backend answers on 20 queries + stats/predict/search/overview vs the original; rendered HTML for 59 screen/state combinations vs the original `app.js` (after accounting for items 7–8 and the logo URL).
+
+## Phase 1–3 changes (security)
+| Change | Detail |
+|---|---|
+| Public CSVs | `public/assets/Dataset/*.csv` no longer contain `Owner ID`, `Owner Name`, `Property Owner`, `Previous Owner`. Regenerate with `python scripts/sync_datasets.py`. |
+| Owner Verification screen | No longer displays owner names/IDs. It has a "Check an owner name" form backed by `POST /api/v1/verification/check`. |
+| `domain/ownerVerification.js` records | `ownerId`, `ownerName`, `listedOwner`, `previousOwner` removed from parsed records. |
+| `GET /api/v1/health` | Now `{"status":"ok"}` only. Old detail moved to `/health/detail` (token). |
+| Rate limiter | `RateLimiter(limit, window, store, name)`; 429 message is "Too many requests…" and includes `Retry-After`. |
+| Error bodies | Every error JSON now has `request_id`. |
+| New routes | `/nice-try`, `/nice-try.html` (static page, `frontend/nice-try.html`). |

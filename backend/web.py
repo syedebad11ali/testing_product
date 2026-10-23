@@ -21,6 +21,12 @@ def register_web(app: Flask, settings: Settings) -> None:
     def legacy_owner_verification():
         return redirect("/#owner-verification", code=301)
 
+    @app.get("/nice-try")
+    @app.get("/nice-try.html")
+    def nice_try():
+        # Static joke page. The *decision* to redirect here is made by the server login endpoint (phase 4).
+        return send_from_directory(fe, "nice-try.html")
+
     @app.get("/css/<path:filename>")
     def css(filename):
         return send_from_directory(fe / "css", filename)

@@ -3,6 +3,7 @@ import { render } from '../app/router.js';
 import { LOGO_URL } from '../config.js';
 import { escapeHtml } from '../core/html.js';
 import OwnerVerification from '../domain/ownerVerification.js';
+import { checkOwnerName } from '../services/verificationApi.js';
 import { ownerState, state } from '../state/store.js';
 
 export function loadOwnerVerificationData(retry){
@@ -51,8 +52,43 @@ export function lookupOwnerProperty(){
   ownerState.result=ownerState.store.lookup(ownerState.id);
   ownerState.lookupError=ownerState.result ? '' : 'No property with that ID was found in the loaded CSV files.';
   ownerState.forecastYears='';
+  ownerState.claim=''; ownerState.check=null;
   render();
 }
+
+const VERDICT_TEXT={
+  match:['owner-check-match','The name you entered matches the name registered for this property in the dataset.'],
+  mismatch:['owner-check-mismatch','The name you entered does not match the registered name for this property.'],
+  unable_to_verify:['owner-check-unknown','We could not verify this name for this property (record not found or name too short).']
+};
+
+export function renderOwnerCheck(){
+  const out=document.getElementById('ownerCheckOutput');
+  if(!out) return;
+  const c=ownerState.check;
+  if(!c){ out.innerHTML=''; return; }
+  if(c.status==='loading'){ out.innerHTML='<div class="owner-check-unknown" role="status">Checking…</div>'; return; }
+  if(c.status==='error'){ out.innerHTML=`<div class="owner-lookup-error" role="alert">${escapeHtml(c.message)}</div>`; return; }
+  const [cls,text]=VERDICT_TEXT[c.result]||VERDICT_TEXT.unable_to_verify;
+  out.innerHTML=`<div class="${cls}" role="status"><strong>${escapeHtml(text)}</strong><br><small>Indicative only, not proof of ownership. Owner names are never shown.</small></div>`;
+}
+
+export async function checkOwnerClaim(){
+  const record=ownerState.result;
+  if(!record || (ownerState.check && ownerState.check.status==='loading')) return;
+  const input=document.getElementById('ownerClaimName');
+  ownerState.claim=(input ? input.value : ownerState.claim).trim();
+  if(ownerState.claim.length<3){ ownerState.check={status:'error',message:'Enter the full owner name (at least 3 characters).'}; renderOwnerCheck(); return; }
+  ownerState.check={status:'loading'}; renderOwnerCheck();
+  try{
+    const data=await checkOwnerName(record.propertyId,ownerState.claim);
+    ownerState.check={status:'done',result:data.result};
+  }catch(error){
+    ownerState.check={status:'error',message:error && error.message ? error.message : 'The check could not be completed.'};
+  }
+  renderOwnerCheck();
+}
+export function setOwnerClaim(value){ ownerState.claim=value; }
 
 export function renderOwnerVerification(){
   const dataStatus=ownerState.error
@@ -68,17 +104,20 @@ export function renderOwnerVerification(){
     <div class="owner-results">
       <section class="owner-panel">
         <div class="owner-panel-heading"><h2>Registered Property</h2><span>${escapeHtml(record.propertyId)}</span></div>
+        <div class="owner-claim">
+          <label for="ownerClaimName">Check an owner name</label>
+          <input id="ownerClaimName" type="text" maxlength="120" autocomplete="off" spellcheck="false" value="${escapeHtml(ownerState.claim)}" placeholder="Full name as on the document" oninput="setOwnerClaim(this.value)">
+          <button class="btn btn-outline" type="button" onclick="checkOwnerClaim()">Check name</button>
+          <div id="ownerCheckOutput" aria-live="polite"></div>
+          <p class="owner-disclaimer">The registered owner is checked on our server and is never shown. The answer is indicative, not proof.</p>
+        </div>
         <dl class="owner-data-grid">
-          ${ownerDataField('Owner name',record.ownerName)}
-          ${ownerDataField('Property owner',record.listedOwner)}
-          ${ownerDataField('Previous owner',record.previousOwner)}
           ${ownerDataField('Property type',record.propertyType)}
           ${ownerDataField('Area',record.area)}
           ${ownerDataField('Block',record.block)}
           ${ownerDataField('House number',record.houseNumber)}
           ${ownerDataField('Street number',record.streetNumber)}
           ${ownerDataField('Rooms',record.rooms)}
-          ${ownerDataField('Owner ID',record.ownerId)}
           ${ownerDataField('Listed price',record.price==null?'Not priced in dataset':ownerPrice(record.price))}
           ${ownerDataField('Source CSV',record.sourceFile)}
         </dl>
@@ -111,7 +150,7 @@ export function renderOwnerVerification(){
       <button class="icon-btn" onclick="nav('home')" aria-label="Back to home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="logo-badge"><img src="${LOGO_URL}" alt="Karachi Property Trust"></div>
     </div>
-    <div class="brand-block"><div class="brand" style="font-size:19px;">Owner Verification System</div><div class="tagline">Look up property ownership and record checks from the supplied datasets</div></div>
+    <div class="brand-block"><div class="brand" style="font-size:19px;">Owner Verification System</div><div class="tagline">Look up property record checks and test an owner name against the registry</div></div>
   </div>
   <main class="owner-verification">
     <section class="owner-lookup-panel">

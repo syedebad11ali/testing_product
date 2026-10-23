@@ -17,7 +17,7 @@ import { local, session } from '../core/storage.js';
 
 export const state = {view:'home', propId:null, search:'', areaFilter:null, typeFilter:'', sort:'newest', saved:new Set()};
 
-export const ownerState = {store:null, promise:null, error:null, id:'', result:null, lookupError:'', forecastYears:''};
+export const ownerState = {store:null, promise:null, error:null, id:'', result:null, lookupError:'', forecastYears:'', claim:'', check:null};
 
 export function freshDocState(){ return {step:'landing', method:null, docType:null, file:null, fields:{}, result:null, historyIndex:null, analyzeSteps:[], analyzeProgress:0, fileError:null, formError:null, cameraPhase:null, cameraStream:null, cameraFacing:'environment', cameraError:null, capturedImage:null, extraction:null, ocrText:'', ocrProgress:0, ocrPhaseLabel:'', showNotVerifiedModal:false, typeKey:null}; }
 export const docState = freshDocState();

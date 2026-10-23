@@ -67,10 +67,6 @@
         const propertyId = (row['Property ID'] || '').trim();
         if(!propertyId) return;
         records.push({
-          ownerId:(row['Owner ID'] || '').trim(),
-          ownerName:(row['Owner Name'] || row['Property Owner'] || '').trim(),
-          listedOwner:(row['Property Owner'] || '').trim(),
-          previousOwner:(row['Previous Owner'] || '').trim(),
           propertyId:propertyId,
           houseNumber:(row['House Number'] || '').trim(),
           streetNumber:(row['Street Number'] || '').trim(),

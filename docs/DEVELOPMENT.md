@@ -22,6 +22,10 @@ All optional. Read only in `backend/config.py`. Local: `.env` in the repo root. 
 | `RATE_LIMIT_PER_MIN` | `20` | Per-IP chat requests per minute |
 | `MAX_MESSAGE_LEN` | `1000` | Max chat message length |
 | `ALLOWED_ORIGINS` | empty | CORS allow-list (comma-separated or `*`) |
+| `VERIFY_RATE_LIMIT_PER_MIN` | `10` | Per-IP owner-name checks per minute |
+| `TRUSTED_PROXY_HOPS` | `1` on Vercel, else `0` | Number of proxies whose `X-Forwarded-For` entry is trusted (sets the real client IP) |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | empty | Shared rate-limit counters (Upstash Redis REST). Empty = per-process memory (fine locally, NOT shared on Vercel) |
+| `HEALTH_DETAIL_TOKEN` | empty | Bearer token for `GET /api/v1/health/detail`. Empty = endpoint returns 404. Temporary until the admin role exists |
 | `DATA_DIR`, `MODEL_PATH` | `backend/datasets`, `backend/ml/price_model.joblib` | Overrides |
 
 Frontend: `window.KPT_CONFIG = { chatApiUrl, chatTimeoutMs }` before `js/main.js` loads (see `js/config.js`).

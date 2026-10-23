@@ -10,9 +10,9 @@ To add an endpoint: create ``backend/api/<resource>.py`` with a ``bp``, add it t
 """
 from flask import Flask
 
-from backend.api import chat, health
+from backend.api import chat, health, verification
 
-RESOURCES = (chat, health)
+RESOURCES = (chat, health, verification)
 
 
 def register_api(app: Flask) -> None:

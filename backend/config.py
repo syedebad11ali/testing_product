@@ -44,7 +44,12 @@ class Settings:
     allowed_origins: tuple[str, ...] = field(default_factory=tuple)
     rate_limit_per_min: int = 20
     max_message_len: int = 1000
+    verify_rate_limit_per_min: int = 10
     port: int = 5000
+    trusted_proxy_hops: int = 0
+    redis_rest_url: str | None = None
+    redis_rest_token: str | None = None
+    health_detail_token: str | None = None
     # --- static site --------------------------------------------------------
     frontend_dir: Path = ROOT_DIR / "frontend"
     assets_dir: Path = ROOT_DIR / "public" / "assets"
@@ -60,5 +65,11 @@ class Settings:
             allowed_origins=_list("ALLOWED_ORIGINS"),
             rate_limit_per_min=_int("RATE_LIMIT_PER_MIN", 20),
             max_message_len=_int("MAX_MESSAGE_LEN", 1000),
+            verify_rate_limit_per_min=_int("VERIFY_RATE_LIMIT_PER_MIN", 10),
             port=_int("PORT", 5000),
+            # Vercel puts exactly one proxy in front of the function; locally there is none.
+            trusted_proxy_hops=_int("TRUSTED_PROXY_HOPS", 1 if os.getenv("VERCEL") else 0, minimum=0),
+            redis_rest_url=os.getenv("UPSTASH_REDIS_REST_URL") or None,
+            redis_rest_token=os.getenv("UPSTASH_REDIS_REST_TOKEN") or None,
+            health_detail_token=os.getenv("HEALTH_DETAIL_TOKEN") or None,
         )

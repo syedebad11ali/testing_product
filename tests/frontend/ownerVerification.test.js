@@ -26,7 +26,7 @@ test('loads every property record from the five supplied CSV files', () => {
 
 test('looks up a real CSV property and compounds its estimate', () => {
   const property = store.lookup('demo-kpt-8103');
-  assert.equal(property.ownerName, 'Rahim Mahsud');
+  assert.equal('ownerName' in property, false);
   assert.equal(property.propertyType, 'Apartment');
   assert.equal(property.price, 10000000);
   const result = store.forecast(property, 2);
@@ -52,10 +52,14 @@ test('loadStore surfaces a failed download as an Error the UI can show', async (
   await assert.rejects(() => OwnerVerification.loadStore(failing), Error);
 });
 
-test('the two copies of the dataset (frontend + backend) are byte-identical', () => {
+test('public datasets contain no owner, previous-owner or owner-id columns', () => {
   for (const name of ['apartments', 'commercials', 'houses', 'plots', 'portions']) {
-    const a = fs.readFileSync(path.join(root, 'public', 'assets', 'Dataset', `${name}.csv`));
-    const b = fs.readFileSync(path.join(root, 'backend', 'datasets', `${name}.csv`));
-    assert.ok(a.equals(b), `${name}.csv differs between public/assets/Dataset and backend/datasets — run scripts/sync_datasets.py`);
+    const header = fs.readFileSync(path.join(root, 'public', 'assets', 'Dataset', `${name}.csv`), 'utf8').split('\n')[0];
+    for (const col of ['Owner ID', 'Owner Name', 'Property Owner', 'Previous Owner']) assert.ok(!header.includes(col), `${name}.csv still has ${col}`);
   }
+});
+
+test('parsed records never carry owner fields', () => {
+  const r = store.lookup('DEMO-KPT-8103');
+  for (const k of ['ownerName', 'ownerId', 'listedOwner', 'previousOwner']) assert.ok(!(k in r), k);
 });

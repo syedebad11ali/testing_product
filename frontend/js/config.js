@@ -8,6 +8,7 @@ const runtime = (typeof window !== 'undefined' && window.KPT_CONFIG) || {};
 const legacyChatUrl = typeof window !== 'undefined' ? window.KPT_CHAT_API_URL : undefined;
 
 export const CHAT_API_URL = runtime.chatApiUrl || legacyChatUrl || '/api/v1/chat';
+export const VERIFY_API_URL = runtime.verifyApiUrl || '/api/v1/verification/check';
 export const CHAT_TIMEOUT_MS = runtime.chatTimeoutMs || 30000;
 
 export const LOGO_URL = 'assets/logo-icon.png';

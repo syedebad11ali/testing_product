@@ -1,0 +1,40 @@
+/* nice-try.css — the "wrong admin password" joke page. No external fonts/scripts (strict CSP). */
+:root { color-scheme: light dark; --bg1:#0f2b2b; --bg2:#06161a; --ink:#fff; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: radial-gradient(120% 90% at 50% 0%, var(--bg1), var(--bg2));
+  color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  display: grid; place-items: center; padding: 24px 16px; overflow-x: hidden;
+}
+.stage { width: min(100%, 980px); display: grid; gap: 28px; justify-items: center; perspective: 900px; }
+.dog { width: min(86vw, 380px); height: auto; border-radius: 22px; box-shadow: 0 18px 50px rgba(0,0,0,.55); }
+.message {
+  margin: 0; width: 100%; text-align: right;            /* right-aligned as requested */
+  font-size: clamp(2.2rem, 7vw, 5rem); font-weight: 900; line-height: 1.08; letter-spacing: .01em;
+  overflow-wrap: anywhere; position: relative; isolation: isolate;
+  /* shifting colour: animated gradient clipped to the text */
+  background: linear-gradient(100deg, #ff4d6d, #ffb703, #3ddc97, #4cc9f0, #b388ff, #ff4d6d);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  animation: shift 6s linear infinite;
+  /* 3D look: extrusion via a stack of drop-shadows (text-shadow would paint over clipped text) */
+  filter: drop-shadow(1px 1px 0 #1b1b1b) drop-shadow(2px 2px 0 #1b1b1b) drop-shadow(3px 3px 0 #161616)
+          drop-shadow(4px 4px 0 #161616) drop-shadow(5px 5px 0 #101010) drop-shadow(6px 8px 10px rgba(0,0,0,.6));
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .12s ease-out;
+}
+/* subtle metal/noise texture overlay (inline SVG filter as a data URI, masked to the glyphs) */
+.message::after {
+  content: attr(data-text); position: absolute; inset: 0; z-index: -1; pointer-events: none;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .09; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.back { color: #9be7e0; font-weight: 700; padding: 12px 18px; min-height: 44px; border-radius: 12px; text-decoration: underline; }
+.back:hover, .back:focus-visible { background: rgba(255,255,255,.12); outline: 2px solid #9be7e0; outline-offset: 2px; }
+@keyframes shift { to { background-position: 300% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .message { animation: none; transition: none; transform: none !important; background-position: 0 0; }
+}
+@media (max-width: 480px) { .message { text-align: right; filter: drop-shadow(2px 2px 0 #161616) drop-shadow(3px 4px 6px rgba(0,0,0,.6)); } }
