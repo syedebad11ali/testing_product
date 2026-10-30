@@ -1,0 +1,42 @@
+/* Login / sign-up / admin pages. Reuses the CSS variables from base.css. */
+body.auth-page{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px 24px;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.auth-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.auth-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--brand-text);font-weight:800;margin-bottom:16px}
+.auth-brand img{width:36px;height:36px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg);border-radius:var(--r-md);padding:4px;margin-bottom:16px}
+.auth-tabs button{border:0;background:transparent;color:var(--sub);padding:10px;border-radius:var(--r-sm);font:inherit;font-weight:700;cursor:pointer;min-height:44px}
+.auth-tabs button[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.auth-field{display:block;margin-bottom:14px}
+.auth-field span{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px}
+.auth-field input{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font:inherit}
+.auth-field input:focus-visible,.auth-btn:focus-visible,.auth-tabs button:focus-visible{outline:3px solid var(--teal-500);outline-offset:2px}
+.auth-pw{position:relative}.auth-pw input{padding-right:64px}
+.auth-pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--brand-text);font-weight:700;cursor:pointer;min-height:44px;padding:0 10px}
+.auth-meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:8px}
+.auth-meter i{display:block;height:100%;width:0;background:var(--bad);transition:width .2s}
+.auth-hint{font-size:.8rem;color:var(--sub);margin-top:6px;min-height:1.1em}
+.auth-btn{width:100%;min-height:46px;border:0;border-radius:var(--r-md);background:var(--brand-text);color:var(--surface);font:inherit;font-weight:800;cursor:pointer}
+.auth-btn[disabled]{opacity:.6;cursor:progress}
+.auth-error{color:var(--bad);font-size:.9rem;margin:0 0 12px;min-height:1.2em}
+.auth-note{font-size:.8rem;color:var(--sub);margin-top:14px;text-align:center}
+.auth-note a{color:var(--brand-text)}
+.auth-link-btn{border:0;background:transparent;color:var(--brand-text);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+[hidden]{display:none!important}
+/* admin */
+body.admin-page{display:block;padding:16px;max-width:1100px;margin:0 auto}
+.admin-bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+.admin-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);margin-bottom:20px}
+.admin-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.admin-table th,.admin-table td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.admin-table button{min-height:36px;margin-right:6px;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:var(--r-sm);cursor:pointer}
+.admin-fail{color:var(--bad);font-weight:700}.admin-ok{color:var(--ok);font-weight:700}
+@media (prefers-reduced-motion:reduce){.auth-meter i{transition:none}}
+.admin-panel{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;background:var(--surface)}
+.admin-panel select,.admin-bar select{min-height:40px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font:inherit;padding:0 8px}
+.admin-pager{display:flex;gap:10px;align-items:center;margin:-12px 0 20px}
+.admin-pager button{min-height:36px;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:var(--r-sm);cursor:pointer;padding:0 12px}
+.admin-pager button[disabled]{opacity:.5;cursor:default}
+.admin-thread{white-space:pre-wrap;word-break:break-word;border:1px solid var(--line);border-radius:var(--r-md);padding:12px;background:var(--surface);max-height:320px;overflow:auto}
+.admin-ban{white-space:normal!important;min-width:180px;font-size:.8rem}
+.notfound{max-width:32rem;margin:15vh auto;padding:1.5rem;text-align:center}
+.auth-guest{display:inline-block;padding:2px 10px;border:1px solid currentColor;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}

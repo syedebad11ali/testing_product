@@ -57,3 +57,7 @@
 /* Empty */
 .empty{text-align:center;padding:30px 10px;color:var(--sub);font-size:13.5px;}
 
+
+/* saved-heart state (from the legacy styles.css) */
+.pcard .thumb .fav.saved{background:var(--teal-500);color:#fff;}
+.pcard .thumb .fav:active{transform:scale(.92);}

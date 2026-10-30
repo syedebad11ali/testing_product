@@ -2,10 +2,12 @@
  * over the captured OCR / pdftotext fixtures with free-search matching, exactly as the live
  * "Verify Your Document" flow does.
  *
- * These numbers are a REGRESSION BASELINE recorded from the pre-refactor code, not a quality
- * target. The listed false positives are a KNOWN ACCURACY PROBLEM (mismatching documents
- * reported as verified) — see docs/KNOWN_ISSUES.md. If you improve the matcher, update the
- * constants below in the same commit. */
+ * These numbers are a REGRESSION BASELINE, not a quality target, and they come from 29 SYNTHETIC
+ * documents. Phase B removed the three recorded false positives (a mismatching document reported as
+ * verified); the baseline now asserts there are none, so any reintroduction fails here. The remaining
+ * false negatives are valid documents that OCR could not confirm (reported as "unable to verify",
+ * never as a mismatch) — see docs/KNOWN_ISSUES.md. If you change the matcher, update the constants
+ * below in the same commit. Rule-level regression tests: tests/frontend/verificationRules.test.js. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -40,11 +42,11 @@ function runLanes() {
 const r = runLanes();
 
 test('app-level pass counts match the recorded baseline', () => {
-  assert.deepEqual(r.out, { ocr: [16, 29], pdf: [26, 28] });
+  assert.deepEqual(r.out, { ocr: [17, 29], pdf: [28, 28] });
 });
 
-test('KNOWN ISSUE: mismatching documents wrongly reported as verified (baseline)', () => {
-  assert.deepEqual(r.falsePositives.sort(), ['ocr/power_of_attorney_mismatch', 'pdf/altered_multiple_mismatch', 'pdf/power_of_attorney_mismatch']);
+test('no mismatching document is reported as verified (was 3 false positives before Phase B)', () => {
+  assert.deepEqual(r.falsePositives, []);
 });
 
 test('valid documents not verified are limited to the recorded OCR cases', () => {

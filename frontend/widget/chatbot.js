@@ -6,7 +6,7 @@
   var cfg = Object.assign({
     apiUrl: origin + "/api/chat",
     title: "Property Assistant",
-    subtitle: "An Ai Assistant that can estimate property prices, compare areas and search our property records. Ask me anything, regarding the Properties of Karachi!.",
+    subtitle: "An AI assistant that can estimate property prices, compare areas and search our property records. Ask me anything about properties in Karachi!",
     brandText: "Property Assistant", brandLogo: "", poweredBy: "Gemini",
     greeting: "Hey There! 👋 How may I help you today?",
     chips: ["Estimate a house price in DHA", "Cheapest area for apartments?", "Show plots under 3 crore in Malir"]
@@ -76,7 +76,19 @@
     if (meta) { var m = document.createElement("div"); m.className = "pc-meta"; m.textContent = meta; row.appendChild(m); }
     msgs.appendChild(row); toBottom(); return row;
   }
-  function metaFor(d) { return d.source === "greeting" ? "" : d.from_data ? "From property data" : "General knowledge"; }
+  /* The server reports which engine answered; keep the footer honest (greetings leave it unchanged). */
+  var PROVIDERS = { openai: "OpenAI", gemini: "Gemini" };
+  function setFoot(d) {
+    var f = root.querySelector(".pc-foot"), src = d && d.source;
+    if (!f) return;
+    if (src === "offline") f.innerHTML = "AI service unavailable \u00b7 <b>offline mode</b>";
+    else if (PROVIDERS[src]) f.innerHTML = "Powered by <b>" + esc(PROVIDERS[src]) + "</b>";
+  }
+  function metaFor(d) {
+    if (d.source === "greeting") return "";
+    if (d.source === "offline") return "Offline mode \u00b7 answered from property data";
+    return d.from_data ? "From property data" : "General knowledge";
+  }
 
   function renderChips() {
     chips.innerHTML = "";
@@ -101,15 +113,27 @@
     var t = document.createElement("div"); t.className = "pc-row bot";
     t.innerHTML = '<div class="pc-bubble pc-typing" aria-label="Assistant is typing"><i></i><i></i><i></i></div>';
     msgs.appendChild(t); toBottom();
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 60000);
     fetch(cfg.apiUrl, { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: st.sid, message: text }) })
-      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "Request failed"); return d; }); })
-      .then(function (d) { t.remove(); var meta = metaFor(d); st.msgs.push({ role: "bot", text: d.reply, meta: meta }); add("bot", d.reply, meta); })
+        body: JSON.stringify({ session_id: st.sid, message: text }), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) {
+        return r.text().then(function (raw) {
+          var d = {}; try { d = raw ? JSON.parse(raw) : {}; } catch (e) {}
+          if (!r.ok) throw new Error(d.error || "Server error (" + r.status + "). Please try again.");
+          if (!d.reply) throw new Error("The server sent an empty reply. Please try again.");
+          return d;
+        });
+      })
+      .then(function (d) { t.remove(); setFoot(d); var meta = metaFor(d); st.msgs.push({ role: "bot", text: d.reply, meta: meta }); add("bot", d.reply, meta); })
       .catch(function (e) {
-        t.remove(); var msg = (e && e.message && e.message !== "Failed to fetch") ? e.message : "I couldn't reach the server. Check your connection and try again.";
+        t.remove();
+        var msg = (e && e.name === "AbortError") ? "The assistant took too long to respond. Please try again."
+          : (e && e.message && e.message !== "Failed to fetch") ? e.message
+          : "I couldn't reach the server. Check your connection and try again.";
         st.msgs.push({ role: "error", text: msg, retry: text }); add("error", msg, "", text);
       })
-      .then(function () { busy = false; syncSend(); save(); if (isOpen()) input.focus(); });
+      .then(function () { clearTimeout(timer); busy = false; syncSend(); save(); if (isOpen()) input.focus(); });
   }
 
   function syncSend() { var ok = input.value.trim().length > 0 && !busy; send.disabled = !ok; send.classList.toggle("ready", ok); }

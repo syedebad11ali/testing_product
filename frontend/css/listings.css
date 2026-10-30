@@ -1,0 +1,22 @@
+/* listings.css — seller listings page (create, my listings, browse, detail). */
+.ls-card{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:16px;margin:0 0 16px}
+.ls-card h2{margin:0 0 8px;font-size:1.1rem}
+.ls-card label{display:block;margin:10px 0 4px;font-weight:600}
+.ls-card input[type=text]{width:100%;max-width:520px;min-height:44px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit}
+.ls-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ls-item{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px}
+.ls-item b,.ls-item small{display:block}.ls-item small{color:var(--sub)}
+.ls-open{min-height:44px;padding:6px 14px;border-radius:999px;border:1px solid var(--brand-text);background:transparent;color:var(--brand-text);cursor:pointer;font:inherit}
+.ls-badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 10px;font-size:.8rem;color:var(--sub)}
+.ls-card input:focus-visible,.ls-open:focus-visible{outline:3px solid var(--brand-text);outline-offset:2px}
+.ls-card[hidden],#lists[hidden]{display:none}
+.ls-pager{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}
+.ls-btn{min-height:44px;padding:6px 16px;border-radius:999px;border:2px solid var(--accent,#0b6f68);background:transparent;color:var(--accent,#0b6f68);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.ls-btn:focus-visible{outline:3px solid var(--accent,#0b6f68);outline-offset:2px}.ls-btn[disabled]{opacity:.5;cursor:not-allowed}
+.ls-pager[hidden]{display:none}
+
+.ls-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.ls-item{flex-wrap:wrap}
+.ls-edit{flex-basis:100%;display:grid;gap:6px;padding-top:8px;border-top:1px solid var(--line)}
+.ls-edit input{width:100%;max-width:520px;min-height:44px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit}
+.ls-edit input:focus-visible,.ls-actions button:focus-visible{outline:3px solid var(--brand-text);outline-offset:2px}

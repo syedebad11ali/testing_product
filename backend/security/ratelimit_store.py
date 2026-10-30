@@ -14,6 +14,7 @@ import logging
 import threading
 import time
 import urllib.request
+from urllib.parse import urlsplit
 from typing import Protocol
 
 log = logging.getLogger("kpt.ratelimit")
@@ -42,16 +43,37 @@ class MemoryStore:
             return count, max(1, int(window_s - (now - start)))
 
 
+_LOOPBACK_HOSTS = ("127.0.0.1", "localhost", "::1")
+
+
+def validate_rest_url(url: str) -> str:
+    """Return the base URL if it is safe to send the bearer token to, otherwise raise ValueError (never echoed).
+
+    Only ``https://host`` is accepted; plain ``http://`` is allowed for loopback hosts only (local fakes, tests).
+    ``file:``, ``ftp:``, custom schemes, URLs without a host and URLs with embedded credentials are refused, so
+    ``urllib`` can never be pointed at a local file or an unencrypted remote endpoint through configuration.
+    """
+    parts = urlsplit(str(url or "").strip())
+    host = (parts.hostname or "").lower()
+    if not host or parts.username or parts.password:
+        raise ValueError("rate-limit store URL needs a host and no embedded credentials")
+    if parts.scheme == "https" or (parts.scheme == "http" and host in _LOOPBACK_HOSTS):
+        return str(url).strip().rstrip("/")
+    raise ValueError("rate-limit store URL must use https (http only for loopback)")
+
+
 class UpstashStore:
     def __init__(self, url: str, token: str, fail_closed: bool = False, timeout_s: float = 1.5) -> None:
-        self.url, self.token, self.fail_closed, self.timeout = url.rstrip("/"), token, fail_closed, timeout_s
+        self.url, self.token = validate_rest_url(url), token
+        self.fail_closed, self.timeout = fail_closed, timeout_s
 
     def hit(self, key: str, window_s: int) -> tuple[int, int]:
         body = json.dumps([["INCR", key], ["EXPIRE", key, window_s, "NX"], ["TTL", key]]).encode()
         req = urllib.request.Request(f"{self.url}/pipeline", data=body, method="POST",
                                      headers={"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310 (https URL from config)
+            # URL scheme/host were checked by validate_rest_url() in __init__
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310  # nosec B310
                 out = json.loads(resp.read())
             return int(out[0]["result"]), max(1, int(out[2]["result"]))
         except Exception:  # noqa: BLE001 - any failure of the shared store is handled the same way

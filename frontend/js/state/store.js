@@ -14,8 +14,9 @@
  */
 import { STORAGE_KEYS } from '../config.js';
 import { local, session } from '../core/storage.js';
+import { sanitizeResultForStorage } from '../domain/resultPrivacy.js';
 
-export const state = {view:'home', propId:null, search:'', areaFilter:null, typeFilter:'', sort:'newest', saved:new Set()};
+export const state = {view:'home', propId:null, featIdx:0, search:'', areaFilter:null, typeFilter:'', sort:'newest', saved:new Set()};
 
 export const ownerState = {store:null, promise:null, error:null, id:'', result:null, lookupError:'', forecastYears:'', claim:'', check:null};
 
@@ -33,7 +34,7 @@ export function loadDocHistory(){
   const saved = local.getJSON(STORAGE_KEYS.docHistory, []);
   docHistory.splice(0, docHistory.length, ...(Array.isArray(saved) ? saved : []));
 }
-export function saveDocHistory(){ local.setJSON(STORAGE_KEYS.docHistory, docHistory); }
+export function saveDocHistory(){ local.setJSON(STORAGE_KEYS.docHistory, docHistory.map(sanitizeResultForStorage)); }
 
 /* ---------- assistant chat ---------- */
 const savedChat = session.getJSON(STORAGE_KEYS.chat, {});

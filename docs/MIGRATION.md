@@ -42,3 +42,11 @@ Verified identical: backend answers on 20 queries + stats/predict/search/overvie
 | Rate limiter | `RateLimiter(limit, window, store, name)`; 429 message is "Too many requests…" and includes `Retry-After`. |
 | Error bodies | Every error JSON now has `request_id`. |
 | New routes | `/nice-try`, `/nice-try.html` (static page, `frontend/nice-try.html`). |
+
+## Session 3 (inline handlers)
+| Change | Detail |
+|---|---|
+| `onclick="nav('home')"` etc. | Now `data-onclick="nav('home')"` (also `data-oninput/onchange/onsubmit/onkeydown`). Parsed by `ui/dispatch.js` with a restricted grammar (no eval); only functions in `ACTIONS` (`ui/actions.js`) can run. |
+| `window.*` handlers | Handlers are no longer published on `window`. |
+| `event.stopPropagation()` / `event.preventDefault()` | Use the builtin actions `stopPropagation()` / `preventDefault()` in the attribute. |
+| New | `frontend/404.html`, `/robots.txt`, `/sitemap.xml`; `tests/browser/smoke.py`. |

@@ -54,8 +54,12 @@ class OfflineEngine:
         block = int(blk.group(1)) if blk else 0
         a_txt, t_txt = (s.area_names[area] if area else ""), (s.type_names[ptype] if ptype else "")
         if re.search(r"\b(price|cost|estimate|worth|how much|value|predict|rate)\b", t) and not re.search(r"\b(average|cheapest|lowest|highest|expensive)\b", t):
-            if not (area and ptype):
-                return "To estimate a price I need the area and property type, e.g. *House in Clifton, block 5*."
+            if not area and not ptype:
+                return "Sure. Which area and property type? For example: *House in Clifton, block 5*."
+            if not area:
+                return f"Which area is the {t_txt.lower()} in? For example DHA, Clifton or Gulshan-e-Iqbal."
+            if not ptype:
+                return f"What type of property in {a_txt}? I have {', '.join(sorted(s.type_names.values())).lower()}."
             yrs = re.search(r"(\d+)\s*(?:years?|yrs?)", t)
             r = s.predict(a_txt, t_txt, block, forecast_years=int(yrs.group(1)) if yrs else 0)
             if "error" in r:
@@ -75,16 +79,19 @@ class OfflineEngine:
             if not rows:
                 o = r["overall"]
                 return f"Median: {o.get('median', 'n/a')}; average: {o.get('average', 'n/a')} across {o['priced_records']} priced records."
-            if re.search(r"\b(highest|expensive)\b", t):
+            most = bool(re.search(r"\b(highest|expensive)\b", t))
+            if most:
                 rows = rows[::-1]
-            return "Median prices" + (f" ({', '.join(map(str, r['filters'].values()))})" if r["filters"] else "") + ":\n" + \
+            noun = "areas" if group == "area" else "property types"
+            lead = f"Most expensive {noun}" if most else f"Cheapest {noun}" if re.search(r"\b(cheapest|lowest)\b", t) else "Median prices, lowest first"
+            return lead + (f" ({', '.join(map(str, r['filters'].values()))})" if r["filters"] else "") + (" by median price" if lead != "Median prices, lowest first" else "") + ":\n" + \
                 "\n".join(f"- {x[group]}: {x.get('median', 'no prices listed')}" for x in rows[:8])
         if re.search(r"\b(list|show|find|search|available|under|below|above|over|between|cheap)\b", t) or area or ptype:
             hi = self._money(t, "under|below|less than|max|upto|up to")
             lo = self._money(t, "above|over|more than|min|at least")
             r = s.search(a_txt, t_txt, block, min_price=lo, max_price=hi, sort="price_desc" if re.search(r"\b(highest|expensive)\b", t) else "price_asc")
             if not r["listings"]:
-                return "No matching properties found."
+                return "I couldn't find matching properties. Try a different area, type or budget."
             return f"{r['total_matches']} matches, showing {r['showing']}:\n" + "\n".join(self._fmt_row(x) for x in r["listings"])
         o = s.overview()
         return (f"I'm in offline mode (AI service unavailable), but I can still use the data. It covers {o['total_records']} records "
@@ -92,5 +99,8 @@ class OfflineEngine:
 
     @staticmethod
     def _fmt_row(x):
-        return f"- {x['property_id']}: {x['property_type']}, {x['area']} block {x['block']}, {x['rooms']} rooms, {x['price']}"
+        # Plots and commercial records have no rooms and some rows have no block: leave those parts out instead of printing "None"/"0 rooms".
+        blk = f" block {x['block']}" if x.get("block") is not None else ""
+        rooms = f", {x['rooms']} room{'' if x['rooms'] == 1 else 's'}" if x.get("rooms") else ""
+        return f"- {x['property_id']}: {x['property_type']}, {x['area']}{blk}{rooms}, {x['price']}"
 

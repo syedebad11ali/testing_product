@@ -1,0 +1,17 @@
+/* creators.css - header "Creators" credit menu (ported from the reference project; avatars are initials, not remote images, so the
+ * strict CSP img-src 'self' data: blob: stays untouched). Uses the shared theme tokens, so light and dark themes both work. */
+.creators-menu{position:relative;flex-shrink:0;margin-left:8px;z-index:61}
+.creators-menu summary{display:flex;align-items:center;gap:8px;min-height:44px;list-style:none;cursor:pointer;border:2px solid var(--brand-text);border-radius:999px;padding:3px 14px 3px 4px;background:var(--surface);color:var(--brand-text);font-size:.85rem;font-weight:700;user-select:none}
+.creators-menu summary::-webkit-details-marker{display:none}
+.creators-menu summary::after{content:"";width:6px;height:6px;margin:0 0 3px 2px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .2s}
+.creators-menu[open] summary::after{transform:rotate(225deg);margin-bottom:0}
+.creators-menu summary:hover{background:var(--teal-100)}
+.creators-menu summary:focus-visible,.creators-dropdown a:focus-visible{outline:3px solid var(--teal-500);outline-offset:2px}
+.creators-icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--teal-100);border:1px solid var(--line);flex-shrink:0}
+.creators-icon svg{width:19px;height:19px;stroke:var(--brand-text);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.creators-dropdown{position:absolute;top:calc(100% + 8px);left:0;min-width:220px;padding:8px;display:grid;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(3,35,59,.18)}
+.creators-dropdown a{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 10px 4px 6px;border-radius:10px;color:var(--text);text-decoration:none;font-weight:600;font-size:.9rem}
+.creators-dropdown a:hover{background:var(--teal-100)}
+.creators-avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--brand-text);color:var(--surface);font-size:.72rem;font-weight:700;letter-spacing:.02em}
+@media (max-width:640px){.creators-label{display:none}.creators-menu summary{padding-right:10px}.creators-dropdown{position:fixed;top:64px;left:12px;right:12px;min-width:0}}
+@media (prefers-reduced-motion:reduce){.creators-menu summary::after{transition:none}}

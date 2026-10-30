@@ -23,12 +23,23 @@ class ApiTests(unittest.TestCase):
         for path in ("/api/v1/health", "/api/health"):
             self.assertEqual(self.client.get(path).get_json(), {"status": "ok"}, path)
 
-    def test_detailed_health_is_hidden_without_token(self):
-        self.assertEqual(self.client.get("/api/v1/health/detail").status_code, 404)
-        c = make_client(health_detail_token="s3cret-token")
-        self.assertEqual(c.get("/api/v1/health/detail", headers={"Authorization": "Bearer wrong"}).status_code, 404)
-        body = c.get("/api/v1/health/detail", headers={"Authorization": "Bearer s3cret-token"}).get_json()
+    def test_detailed_health_is_admin_only(self):
+        from tests.backend.test_auth import ADMIN_PW, Client
+        c = Client()
+        self.assertEqual(c.get("/api/v1/health/detail").status_code, 404)  # anonymous
+        c.signup()
+        self.assertEqual(c.get("/api/v1/health/detail").status_code, 404)  # normal user: same 404 as a missing route
+        admin = Client()
+        admin.login("admin_001", ADMIN_PW)
+        body = admin.get("/api/v1/health/detail").get_json()
         self.assertEqual(body["records"], 16000)
+        # Agents SDK engine is opt-in: off by default, and its status never carries a key.
+        self.assertEqual(body["agents"]["enabled"], False)
+        self.assertEqual(body["agents"]["disabled_reason"], "not_selected")
+        self.assertNotIn("sk-", repr(body["agents"]))
+        self.assertIs(body["gemini"], False)                       # the original boolean key is unchanged
+        self.assertEqual(body["gemini_status"]["disabled_reason"], "no_key")
+        self.assertNotIn("key=", repr(body["gemini_status"]).lower())
 
     def test_chat_answers_from_records_on_both_paths(self):
         for path in ("/api/v1/chat", "/api/chat"):
@@ -58,7 +69,10 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.options("/api/v1/chat").status_code, 204)
 
     def test_static_site_routes(self):
-        self.assertEqual(self.client.get("/").status_code, 200)
+        # Login-first (T4): the application page needs a session; its scripts, styles and the sign-in pages stay public.
+        r = self.client.get("/")
+        self.assertEqual((r.status_code, r.headers["Location"]), (302, "/login"))
+        self.assertEqual(self.client.get("/login").status_code, 200)
         self.assertEqual(self.client.get("/js/main.js").status_code, 200)
         self.assertEqual(self.client.get("/css/base.css").status_code, 200)
         self.assertEqual(self.client.get("/static/chatbot.js").status_code, 200)
@@ -95,7 +109,7 @@ class FailureHandlingTests(unittest.TestCase):
         app = create_app(dataclasses.replace(Settings.from_env(), gemini_api_key=None))
 
         class Boom:
-            def reply(self, *a):
+            def reply(self, *a, **k):
                 raise RuntimeError("secret /path/to/model.joblib failure")
 
         app.extensions["kpt"]._service = Boom()
@@ -106,20 +120,26 @@ class FailureHandlingTests(unittest.TestCase):
         self.assertTrue(body["error_id"])
 
     def test_health_reports_startup_failure_as_503(self):
-        app = create_app(dataclasses.replace(Settings.from_env(), data_dir=Settings.from_env().data_dir / "missing", gemini_api_key=None, health_detail_token="tok"))
-        self.assertEqual(app.test_client().get("/api/v1/health").get_json(), {"status": "ok"})  # public stays minimal
-        r = app.test_client().get("/api/v1/health/detail", headers={"Authorization": "Bearer tok"})
+        from tests.backend.test_auth import ADMIN_PW, Client
+        c = Client(data_dir=Settings.from_env().data_dir / "missing")
+        self.assertEqual(c.get("/api/v1/health").get_json(), {"status": "ok"})  # public stays minimal
+        c.login("admin_001", ADMIN_PW)
+        r = c.get("/api/v1/health/detail")
         self.assertEqual(r.status_code, 503)
         self.assertEqual(r.get_json()["status"], "error")
 
 
 
 class VerificationTests(unittest.TestCase):
-    def setUp(self):
-        self.client = make_client(rate_limit_per_min=1000, verify_rate_limit_per_min=1000)
+    """The owner check needs a login + CSRF token, so these use the browser-like Client from test_auth."""
 
-    def check(self, pid, name):
-        return self.client.post("/api/v1/verification/check", json={"property_id": pid, "owner_name": name})
+    def setUp(self):
+        from tests.backend.test_auth import Client
+        self.client = Client(verify_rate_limit_per_min=1000)
+        self.client.signup()
+
+    def check(self, pid, name, client=None):
+        return (client or self.client).post("/api/v1/verification/check", {"property_id": pid, "owner_name": name})
 
     def test_verdicts_and_no_names_leak(self):
         ok = self.check("demo-kpt-8103", "Rahim Mahsud").get_json()
@@ -130,9 +150,11 @@ class VerificationTests(unittest.TestCase):
         self.assertEqual(self.check("NOPE-1", "Somebody Else").get_json()["result"], "unable_to_verify")
 
     def test_validation_and_rate_limit(self):
+        from tests.backend.test_auth import Client
         self.assertEqual(self.check("", "x").status_code, 400)
-        limited = make_client(verify_rate_limit_per_min=2)
-        codes = [limited.post("/api/v1/verification/check", json={"property_id": "A", "owner_name": "Bob Ali"}).status_code for _ in range(3)]
+        limited = Client(verify_rate_limit_per_min=2)
+        limited.signup()
+        codes = [self.check("A", "Bob Ali", limited).status_code for _ in range(3)]
         self.assertEqual(codes, [200, 200, 429])
 
 
@@ -157,7 +179,7 @@ class NoOwnerExposureTests(unittest.TestCase):
 
 
 class SecurityTests(unittest.TestCase):
-    ROUTES = ["/", "/js/main.js", "/css/base.css", "/api/v1/health", "/api/v1/nope", "/chatbot-demo"]
+    ROUTES = ["/", "/js/main.js", "/css/base.css", "/api/v1/health", "/api/v1/nope", "/chatbot-demo", "/login", "/signup", "/nice-try", "/admin"]
 
     def test_security_headers_on_every_route(self):
         client = make_client(rate_limit_per_min=1000)
@@ -170,10 +192,16 @@ class SecurityTests(unittest.TestCase):
             self.assertIn("camera=(self)", h["Permissions-Policy"])
         self.assertEqual(client.get("/api/v1/health").headers["Cache-Control"], "no-store")
 
-    def test_csp_allows_the_inline_theme_script_by_hash(self):
+    def test_csp_needs_no_inline_script_allowance(self):
+        """The theme bootstrap is an external blocking script now, so no page has an inline <script>."""
+        import pathlib, re
         csp = make_client().get("/").headers["Content-Security-Policy"]
-        self.assertRegex(csp, r"script-src [^;]*'sha256-")
-        self.assertNotIn("script-src 'unsafe-inline'", csp)
+        script_src = re.search(r"script-src ([^;]*)", csp).group(1)
+        self.assertNotIn("'unsafe-inline'", script_src)
+        self.assertNotRegex(script_src, r"'sha256-")
+        self.assertIn("script-src-attr 'none'", csp)
+        for page in pathlib.Path(__file__).resolve().parents[2].joinpath("frontend").glob("*.html"):
+            self.assertNotRegex(page.read_text(encoding="utf-8"), r"<script(?![^>]*\bsrc=)[^>]*>\s*\S", page.name)
 
     def test_429_has_retry_after_and_request_id(self):
         client = make_client(rate_limit_per_min=1)
@@ -216,10 +244,48 @@ class NiceTryPageTests(unittest.TestCase):
 
     def test_vercel_json_sets_headers_for_cdn_assets(self):
         import json, pathlib
-        cfg = json.loads((pathlib.Path(__file__).resolve().parents[2] / "vercel.json").read_text())
+        cfg = json.loads((pathlib.Path(__file__).resolve().parents[2] / "vercel.json").read_text(encoding="utf-8"))
         keys = {h["key"] for block in cfg["headers"] for h in block["headers"]}
         self.assertTrue({"X-Content-Type-Options", "Strict-Transport-Security", "Content-Security-Policy"} <= keys)
 
 
+class SeoAndNotFoundTests(unittest.TestCase):
+    def test_robots_sitemap_and_html_404(self):
+        c = make_client()
+        robots = c.get("/robots.txt").get_data(as_text=True)
+        self.assertIn("Disallow: /admin", robots)
+        self.assertIn("/sitemap.xml", robots)
+        self.assertIn("<urlset", c.get("/sitemap.xml").get_data(as_text=True))
+        r = c.get("/no-such-page")
+        self.assertEqual(r.status_code, 404)
+        self.assertIn("Page not found", r.get_data(as_text=True))
+        self.assertEqual(c.get("/api/v1/nope").get_json()["code"], "not_found")
+
+
 if __name__ == "__main__":
     unittest.main()
+
+
+class StrictStyleTests(unittest.TestCase):
+    """style-src drops 'unsafe-inline' on every HTML page (guarded by tests/frontend/strictStyles.test.js)."""
+
+    def style_src(self, client, path):
+        import re
+        r = client.get(path)
+        return r.status_code, re.search(r"style-src ([^;]*)", r.headers["Content-Security-Policy"]).group(1)
+
+    def test_all_html_pages_and_404_have_no_unsafe_inline(self):
+        c = make_client()
+        for path in ("/", "/login", "/signup", "/privacy", "/messages", "/listings", "/nice-try", "/chatbot-demo", "/definitely-missing"):
+            status, style = self.style_src(c, path)
+            self.assertNotIn("'unsafe-inline'", style, path)
+            self.assertIn("'self'", style)
+        self.assertEqual(self.style_src(c, "/definitely-missing")[0], 404)
+        self.assertNotIn("'unsafe-inline'", self.style_src(c, "/")[1])  # main app page is strict since session 14
+        self.assertNotIn("'unsafe-inline'", self.style_src(c, "/index.html")[1])
+
+    def test_strict_csp_keeps_the_other_protections(self):
+        csp = make_client().get("/login").headers["Content-Security-Policy"]
+        for needle in ("script-src-attr 'none'", "object-src 'none'", "frame-ancestors 'none'", "base-uri 'self'", "https://accounts.google.com/gsi/style"):
+            self.assertIn(needle, csp)
+        self.assertNotIn("'unsafe-inline'", csp)

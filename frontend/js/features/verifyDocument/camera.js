@@ -27,13 +27,13 @@ export function renderDocCamera(){
 
 function nativeCameraInputHtml(){
   return `
-    <input
+    <input class="u-display-none"
       type="file"
       id="docCameraCaptureInput"
       accept="image/*"
       capture="environment"
-      style="display:none"
-      onchange="docHandleCameraCapture(this)"
+     
+      data-onchange="docHandleCameraCapture(this)"
     >
   `;
 }
@@ -44,7 +44,7 @@ function nativeCameraInputHtml(){
    and keeping the action buttons below always on-screen. */
 function camHeader(title, subtitle, backAction){
   return `<div class="cam-topbar">
-    <button class="icon-btn" onclick="${backAction}" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+    <button class="icon-btn" data-onclick="${backAction}" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
     <div class="cam-topbar-text">
       <div class="cam-topbar-title">${title}</div>
       ${subtitle?`<div class="cam-topbar-sub">${subtitle}</div>`:''}
@@ -57,12 +57,12 @@ function renderDocCameraPermission(){
   <div class="cam-fullscreen">
   ${camHeader('Scan / Capture Document', docState.docType, "docGoStep('landing')")}
   <div class="cam-fullscreen-body">
-    <div class="doc-option-card" style="cursor:default;">
+    <div class="doc-option-card u-cursor-default">
       <div class="doc-option-icon">📷</div>
       <h3>Use Your Camera</h3>
       <p>Open the camera to capture a clear photo of your document.</p>
 
-      <button class="btn btn-primary btn-block" style="margin-top:0;" onclick="startDocumentCamera()">
+      <button class="btn btn-primary btn-block u-margin-top-0" data-onclick="startDocumentCamera()">
         Open Live Camera
       </button>
 
@@ -70,7 +70,7 @@ function renderDocCameraPermission(){
         📸 Take Photo
       </label>
 
-      <div style="font-size:11px;color:var(--sub);line-height:1.45;margin-top:10px;">
+      <div class="u-font-size-11px-color-var-sub-line-heig-173aa">
         On phones, <strong>Take Photo</strong> can open the device camera directly
         if live camera preview is unavailable.
       </div>
@@ -83,8 +83,8 @@ function renderDocCameraPermission(){
       <span>Place the document on a flat surface, keep all four corners visible, and use good lighting.</span>
     </div>
 
-    <button class="btn btn-outline btn-block" onclick="docGoStep('upload')">Choose an Existing Photo Instead</button>
-    <button class="btn btn-link btn-block" onclick="docGoStep('manual')">Enter Details Manually</button>
+    <button class="btn btn-outline btn-block" data-onclick="docGoStep('upload')">Choose an Existing Photo Instead</button>
+    <button class="btn btn-link btn-block" data-onclick="docGoStep('manual')">Enter Details Manually</button>
   </div>
   </div>`;
 }
@@ -94,7 +94,7 @@ function renderDocCameraDenied(){
   <div class="cam-fullscreen">
   ${camHeader('Camera Access Blocked', docState.docType, "docGoStep('landing')")}
   <div class="cam-fullscreen-body">
-    <div class="doc-option-card" style="cursor:default;">
+    <div class="doc-option-card u-cursor-default">
       <div class="doc-option-icon">🚫</div>
       <h3>Live Camera Unavailable</h3>
       <p>${escapeHtml(docState.cameraError || 'Your browser did not allow the live camera preview.')}</p>
@@ -103,10 +103,10 @@ function renderDocCameraDenied(){
         📸 Take Photo
       </label>
 
-      <button class="btn btn-outline btn-block" onclick="docGoStep('upload')">Upload an Existing Photo</button>
-      <button class="btn btn-outline btn-block" onclick="docGoStep('manual')">Enter Details Manually</button>
+      <button class="btn btn-outline btn-block" data-onclick="docGoStep('upload')">Upload an Existing Photo</button>
+      <button class="btn btn-outline btn-block" data-onclick="docGoStep('manual')">Enter Details Manually</button>
 
-      <div class="camera-help-card" style="margin-top:12px;text-align:left;">
+      <div class="camera-help-card u-margin-top-12px-text-align-left">
         <strong>Why this happens</strong>
         <span>Live camera access can be blocked by browser privacy settings, an embedded preview, or an insecure page. The phone's camera upload is provided as a fallback.</span>
       </div>
@@ -122,7 +122,7 @@ function renderDocCameraUnavailable(){
   <div class="cam-fullscreen">
   ${camHeader('Camera Not Available', docState.docType, "docGoStep('landing')")}
   <div class="cam-fullscreen-body">
-    <div class="doc-option-card" style="cursor:default;">
+    <div class="doc-option-card u-cursor-default">
       <div class="doc-option-icon">📷</div>
       <h3>Use Your Device Camera</h3>
       <p>Live preview is unavailable here, but you can still take a photo with your device camera and use it for document verification.</p>
@@ -131,8 +131,8 @@ function renderDocCameraUnavailable(){
         📸 Take Photo
       </label>
 
-      <button class="btn btn-outline btn-block" onclick="docGoStep('upload')">Upload an Existing Photo</button>
-      <button class="btn btn-outline btn-block" onclick="docGoStep('manual')">Enter Details Manually</button>
+      <button class="btn btn-outline btn-block" data-onclick="docGoStep('upload')">Upload an Existing Photo</button>
+      <button class="btn btn-outline btn-block" data-onclick="docGoStep('manual')">Enter Details Manually</button>
     </div>
 
     ${nativeCameraInputHtml()}
@@ -166,14 +166,14 @@ function renderDocCameraLive(){
     </div>
 
     <div class="cam-controls">
-      <button class="cam-btn" onclick="closeDocumentCamera()" aria-label="Close">✕</button>
-      <button class="cam-capture" onclick="captureDocumentFrame()" aria-label="Capture document" title="Capture document"></button>
-      <button class="cam-btn" id="camSwitchBtn" style="visibility:hidden;" onclick="switchDocumentCamera()" aria-label="Switch camera">⟳</button>
+      <button class="cam-btn" data-onclick="closeDocumentCamera()" aria-label="Close">✕</button>
+      <button class="cam-capture" data-onclick="captureDocumentFrame()" aria-label="Capture document" title="Capture document"></button>
+      <button class="cam-btn u-visibility-hidden" id="camSwitchBtn" data-onclick="switchDocumentCamera()" aria-label="Switch camera">⟳</button>
     </div>
 
     <div class="cam-secondary-actions">
       <label class="btn btn-outline cam-native-btn" for="docCameraCaptureInput">📸 Use Device Camera</label>
-      <button class="btn btn-link" onclick="docGoStep('upload')">Choose Existing Photo</button>
+      <button class="btn btn-link" data-onclick="docGoStep('upload')">Choose Existing Photo</button>
     </div>
 
     ${nativeCameraInputHtml()}
@@ -194,8 +194,8 @@ function renderDocCameraReview(){
       </div>
     </div>
     <div class="action-row">
-      <button class="btn btn-outline" onclick="retakeDocumentCapture()">Retake</button>
-      <button class="btn btn-primary" onclick="useCapturedDocument()">Use This Document</button>
+      <button class="btn btn-outline" data-onclick="retakeDocumentCapture()">Retake</button>
+      <button class="btn btn-primary" data-onclick="useCapturedDocument()">Use This Document</button>
     </div>
   </div>
   </div>`;
@@ -206,11 +206,11 @@ function renderDocCameraPoorQuality(){
   <div class="cam-fullscreen">
   ${camHeader('Image Too Difficult to Read', docState.docType, "closeDocumentCamera()")}
   <div class="cam-fullscreen-body">
-    <div class="doc-option-card" style="cursor:default;">
+    <div class="doc-option-card u-cursor-default">
       <div class="doc-option-icon">⚠️</div>
       <h3>Try a Clearer Photo</h3>
       <p>The captured image appears too dark, blank, or unclear for a useful check.</p>
-      <button class="btn btn-primary btn-block" onclick="retakeDocumentCapture()">Retake Photo</button>
+      <button class="btn btn-primary btn-block" data-onclick="retakeDocumentCapture()">Retake Photo</button>
       <label class="btn btn-outline btn-block cam-native-btn" for="docCameraCaptureInput">📸 Take Photo With Device Camera</label>
     </div>
     ${nativeCameraInputHtml()}

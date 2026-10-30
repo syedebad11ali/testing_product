@@ -39,6 +39,9 @@ def register_error_handlers(app: Flask) -> None:
         from flask import request
         if request.path.startswith("/api/"):
             return jsonify(_payload(e.description or e.name, e.name.lower().replace(" ", "_"))), e.code
+        if e.code == 404:  # real HTML 404 page for the site
+            from flask import current_app, send_from_directory
+            return send_from_directory(current_app.extensions["kpt"].settings.frontend_dir, "404.html"), 404
         return e
 
     @app.errorhandler(Exception)

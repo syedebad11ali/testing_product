@@ -1,0 +1,5 @@
+/* Developer Login page: single centred card; form, field and button styles come from login.css. */
+.dev-main{min-height:calc(100vh - 64px);min-height:calc(100dvh - 64px);display:grid;place-items:center;padding:28px 20px}
+.dev-card{width:100%;max-width:460px}
+.dev-card h1{margin:.2em 0 .3em}
+.dev-card .lead{margin-bottom:1.2em}

@@ -14,11 +14,11 @@ function renderPromo(p){
     <div class="promo-inner">
       <div class="promo-thumb"><span class="badge">BEST PRICE</span></div>
       <div class="promo-body">
-        <button class="promo-close" onclick="hidePromo()" aria-label="Dismiss">✕</button>
+        <button class="promo-close" data-onclick="hidePromo()" aria-label="Dismiss">✕</button>
         <div class="pt">${p.title} · ${p.type}</div>
         <div class="pl">${p.area}, Karachi</div>
         <div class="pp">${p.priceLabel} <span class="good-deal">· Good Deal</span></div>
-        <button onclick="hidePromo(true);nav('detail','${p.id}')">View Property</button>
+        <button data-onclick="hidePromo(true);nav('detail','${p.id}')">View Property</button>
       </div>
     </div>`;
 }

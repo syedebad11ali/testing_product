@@ -14,3 +14,9 @@ node_modules/
 # tooling output
 .vercel/
 tests/.results/
+
+.local/
+
+# local wheel cache used for offline installs (never commit)
+offline_wheels/
+.local/

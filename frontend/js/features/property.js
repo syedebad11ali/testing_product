@@ -9,22 +9,22 @@ export function renderDetail(id){
   const p = PROPERTIES.find(x=>x.id===id);
   const ov = overallStatus(p);
   return `
-  <div class="hero" style="background-image:linear-gradient(180deg, rgba(15,42,61,.18), rgba(15,42,61,.34)), url('${p.image}'); background-size:cover; background-position:center; background-repeat:no-repeat;">
-    <button class="backbtn" onclick="nav('home')">←</button>
-    <button class="favbtn" onclick="toggleSave('${p.id}')">${state.saved.has(p.id)?'♥':'♡'}</button>
+  <div class="hero bg-photo bg-grad-hero" data-bg="${p.image}">
+    <button class="backbtn" data-onclick="nav('home')">←</button>
+    <button class="favbtn${state.saved.has(p.id)?' saved':''}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save property" data-onclick="toggleSave('${p.id}')">${state.saved.has(p.id)?'♥':'♡'}</button>
   </div>
   <div class="detail-card">
-    <div class="d-title">${p.title}</div>
+    <div class="d-title" role="heading" aria-level="1">${p.title}</div>
     <div class="d-loc">${p.area}, Karachi</div>
     <div class="d-price">${p.priceLabel}</div>
     <div class="d-stats">
       <div class="d-stat">📐 ${p.size}</div>
       ${p.beds?`<div class="d-stat">🛏 ${p.beds} Beds</div>`:''}
       ${p.baths?`<div class="d-stat">🛁 ${p.baths} Baths</div>`:''}
-      <div class="d-stat" style="color:${ov==='verified'?'var(--ok)':ov==='issue'?'var(--bad)':ov==='review'?'var(--warn)':'var(--mute)'}">${STATUS_META[ov].icon} ${STATUS_META[ov].label}</div>
+      <div class="d-stat ${ov==='verified'?'tone-ok':ov==='issue'?'tone-bad':ov==='review'?'tone-warn':'tone-mute'}">${STATUS_META[ov].icon} ${STATUS_META[ov].label}</div>
     </div>
 
-    <div class="section-title" style="margin-top:20px;margin-bottom:8px;">Basic Information</div>
+    <div class="section-title u-margin-top-20px-margin-bottom-8px">Basic Information</div>
     <div class="info-grid">
       <div><span class="lbl">Property Type</span><span class="val">${p.type}</span></div>
       <div><span class="lbl">Reference</span><span class="val">${p.plot}</span></div>
@@ -47,12 +47,14 @@ export function renderDetail(id){
     </details>
 
     <div class="action-row">
-      <button class="btn btn-outline" onclick="toggleSave('${p.id}')">${state.saved.has(p.id)?'Saved':'Save Property'}</button>
-      <button class="btn btn-outline" onclick="openChat()">Contact Seller</button>
-      <button class="verify-cta-btn" onclick="nav('verify','${p.id}')">🛡 Verify This Property</button>
+      <button class="btn btn-outline" data-onclick="toggleSave('${p.id}')">${state.saved.has(p.id)?'Saved':'Save Property'}</button>
+      <button class="btn btn-outline" data-onclick="openChat()">Contact Seller</button>
+      <button class="btn btn-primary" data-onclick="chatWithSeller('${p.id}')">Chat with seller</button>
+      <button class="verify-cta-btn" data-onclick="nav('verify','${p.id}')">🛡 Verify This Property</button>
     </div>
+    <p class="seller-chat-note" id="sellerChatNote" role="status" aria-live="polite"></p>
   </div>
-  <div style="height:24px;"></div>`;
+  <div class="u-height-24px"></div>`;
 }
 
 export function renderVerify(id){
@@ -70,22 +72,22 @@ export function renderVerify(id){
     if(key==='documents'){
       panel += `
         <div class="mini-form">
-          <div class="section-title" style="font-size:12.5px;margin:12px 0 0;">Enter property &amp; owner details</div>
-          <label>Owner CNIC</label>
+          <div class="section-title u-font-size-12-5px-margin-12px-0-0">Enter property &amp; owner details</div>
+          <label for="cnic-${p.id}">Owner CNIC</label>
           <input id="cnic-${p.id}" placeholder="e.g. 42101-1234567-1">
-          <label>Plot / Survey Number</label>
+          <label for="plot-${p.id}">Plot / Survey Number</label>
           <input id="plot-${p.id}" value="${p.plot!=='—'?p.plot:''}">
-          <label>Owner Name</label>
+          <label for="ownername-${p.id}">Owner Name</label>
           <input id="ownername-${p.id}" value="${p.owner}">
           <div class="save-row">
-            <button class="vcat-btn" type="button" onclick="saveManualInfo('${p.id}')">Save Details</button>
+            <button class="vcat-btn" type="button" data-onclick="saveManualInfo('${p.id}')">Save Details</button>
             <span class="saved-msg" id="savedmsg-${p.id}">✓ Saved</span>
           </div>
         </div>
         <div class="upload-box">
-          <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">Not sure whether a document is genuine? Upload it here to check.</div>
+          <div class="u-font-size-12px-color-var-sub-margin-bo-2da11">Not sure whether a document is genuine? Upload it here to check.</div>
           <label class="upload-btn" for="fileup-${p.id}">📎 Upload document to check</label>
-          <input type="file" id="fileup-${p.id}" onchange="handleDocUpload(this,'${p.id}')">
+          <input type="file" id="fileup-${p.id}" data-onchange="handleDocUpload(this,'${p.id}')">
           <div class="upload-filename" id="uf-${p.id}"></div>
           <div class="processing" id="proc-${p.id}"><span class="spin"></span> Extracting &amp; checking document…</div>
           <div class="auth-result" id="ar-${p.id}">
@@ -97,7 +99,7 @@ export function renderVerify(id){
         </div>`;
     }
     return `<div class="vitem" id="vitem-${key}">
-      <div class="vitem-row" onclick="document.getElementById('vitem-${key}').classList.toggle('open')">
+      <div class="vitem-row" data-onclick="toggleOpen('vitem-${key}')">
         <div class="vitem-icon">${CAT_ICONS[key]}</div>
         <div class="vitem-main">
           <div class="vitem-title">${label}</div>
@@ -110,12 +112,12 @@ export function renderVerify(id){
   }).join('');
 
   return `
-  <div class="header" style="padding-bottom:20px;">
+  <div class="header u-padding-bottom-20px">
     <div class="header-top">
-      <button class="icon-btn" onclick="nav('detail','${p.id}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="icon-btn" data-onclick="nav('detail','${p.id}')" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="logo-badge"><img src="${LOGO_URL}" alt="Karachi Property Trust"></div>
     </div>
-    <div class="brand-block"><div class="brand" style="font-size:19px;">Property Verification</div><div class="tagline">Independent check, not a purchase transaction</div></div>
+    <div class="brand-block"><div class="brand u-font-size-19px" role="heading" aria-level="1">Property Verification</div><div class="tagline">Independent check, not a purchase transaction</div></div>
   </div>
   <main>
     <div class="vprop">
@@ -126,22 +128,22 @@ export function renderVerify(id){
         <div class="l">Owner: ${p.owner}</div>
       </div>
     </div>
-    <div class="progress-label" style="display:flex;justify-content:space-between;"><span>Verification Progress</span><span>${pct}% Checked</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="progress-label u-display-flex-justify-content-space-between"><span>Verification Progress</span><span>${pct}% Checked</span></div>
+    <div class="progress-track"><div class="progress-fill" data-w="${pct}"></div></div>
 
-    <div class="section-title" style="margin-top:20px;">Verification Categories</div>
+    <div class="section-title u-margin-top-20px">Verification Categories</div>
     <div class="section-sub">Tap a category to see details, add information, or upload a document.</div>
     ${rows}
 
     <div class="section-title">Risk &amp; Trust Summary</div>
     <div class="stat-row">
-      <div class="stat-box"><div class="stat-num" style="color:var(--ok)">${verifiedCount}</div><div class="stat-lbl">Verified</div></div>
-      <div class="stat-box"><div class="stat-num" style="color:var(--warn)">${reviewCount}</div><div class="stat-lbl">Review Required</div></div>
-      <div class="stat-box"><div class="stat-num" style="color:var(--mute)">${uncheckedCount}</div><div class="stat-lbl">Not Verified</div></div>
+      <div class="stat-box"><div class="stat-num u-color-var-ok">${verifiedCount}</div><div class="stat-lbl">Verified</div></div>
+      <div class="stat-box"><div class="stat-num u-color-var-warn">${reviewCount}</div><div class="stat-lbl">Review Required</div></div>
+      <div class="stat-box"><div class="stat-num u-color-var-mute">${uncheckedCount}</div><div class="stat-lbl">Not Verified</div></div>
     </div>
-    <div class="disclaimer" style="margin-top:12px;">This is a document and record analysis, not an official government or bank authentication. Treat "Review Required" items as things to double-check with the relevant authority before proceeding.</div>
+    <div class="disclaimer u-margin-top-12px">This is a document and record analysis, not an official government or bank authentication. Treat "Review Required" items as things to double-check with the relevant authority before proceeding.</div>
 
-    <button class="btn btn-primary btn-block" onclick="nav('report','${p.id}')">View Full Report</button>
+    <button class="btn btn-primary btn-block" data-onclick="nav('report','${p.id}')">View Full Report</button>
   </main>`;
 }
 
@@ -167,12 +169,12 @@ export function renderReport(id){
   const ov = overallStatus(p);
   const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   return `
-  <div class="header" style="padding-bottom:20px;">
+  <div class="header u-padding-bottom-20px">
     <div class="header-top">
-      <button class="icon-btn" onclick="nav('verify','${p.id}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="icon-btn" data-onclick="nav('verify','${p.id}')" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="logo-badge"><img src="${LOGO_URL}" alt="Karachi Property Trust"></div>
     </div>
-    <div class="brand-block"><div class="brand" style="font-size:19px;">Verification Report</div><div class="tagline">Generated ${today}</div></div>
+    <div class="brand-block"><div class="brand u-font-size-19px">Verification Report</div><div class="tagline">Generated ${today}</div></div>
   </div>
   <main>
     <div class="report-block">
@@ -189,13 +191,13 @@ export function renderReport(id){
     </div>
     <div class="report-block">
       <h4>Overall Result</h4>
-      <span class="status-badge ${STATUS_META[ov].color}" style="font-size:13px;padding:7px 14px;">${STATUS_META[ov].icon} ${STATUS_META[ov].label}</span>
+      <span class="status-badge ${STATUS_META[ov].color} u-font-size-13px-padding-7px-14px">${STATUS_META[ov].icon} ${STATUS_META[ov].label}</span>
       <div class="disclaimer">This report reflects document analysis and available records only. It is not an official land-registry, bank, or court authentication. Outstanding checks should be confirmed with the relevant authority before finalising any transaction.</div>
     </div>
-    <div class="action-row" style="grid-template-columns:1fr 1fr 1fr;">
-      <button class="btn btn-outline" onclick="window.print()">Download</button>
-      <button class="btn btn-outline" onclick="openChat()">Share</button>
-      <button class="btn btn-primary" onclick="nav('detail','${p.id}')">Done</button>
+    <div class="action-row u-grid-template-columns-1fr-1fr-1fr">
+      <button class="btn btn-outline" data-onclick="print()">Download</button>
+      <button class="btn btn-outline" data-onclick="openChat()">Share</button>
+      <button class="btn btn-primary" data-onclick="nav('detail','${p.id}')">Done</button>
     </div>
   </main>`;
 }
@@ -211,45 +213,45 @@ export function renderSubList(kind){
   const rows = cfg.list.map(p=>{
     const m = STATUS_META[overallStatus(p)];
     const verifiedImage = p.VerifiedImage || p.VerificationImage;
-    return `<div class="vprop" style="margin-bottom:10px;">
-      <div class="thumb" onclick="nav('detail','${p.id}')" style="cursor:pointer;background-image:url('${verifiedImage}');background-size:cover;background-position:center;"></div>
-      <div style="flex:1;min-width:0;">
+    return `<div class="vprop u-margin-bottom-10px">
+      <div class="thumb bg-photo u-cursor-pointer" data-onclick="nav('detail','${p.id}')" data-bg="${verifiedImage}"></div>
+      <div class="u-flex-1-min-width-0">
         <div class="t">${p.title}</div>
         <div class="l">Property ID: ${p.id}</div>
         <div class="l">${p.area}</div>
-        <span class="status-badge ${m.color}" style="margin-top:6px;">${m.icon} ${m.label}</span>
+        <span class="status-badge ${m.color} u-margin-top-6px">${m.icon} ${m.label}</span>
       </div>
-      <button class="btn btn-outline" style="padding:8px 12px;font-size:11px;flex-shrink:0;" onclick="${cfg.actionFn(p)}">${cfg.actionLabel}</button>
+      <button class="btn btn-outline u-padding-8px-12px-font-size-11px-flex-s-ff380" data-onclick="${cfg.actionFn(p)}">${cfg.actionLabel}</button>
     </div>`;
   }).join('') || `<div class="empty">${cfg.empty}</div>`;
 
   const reportOptions = kind === 'reports' ? `
-    <div class="doc-options" style="margin-bottom:18px;">
-      <div class="doc-option-card" onclick="openReportEvidenceUpload()">
+    <div class="doc-options u-margin-bottom-18px">
+      <div class="doc-option-card" data-onclick="openReportEvidenceUpload()">
         <div class="doc-option-icon">📄</div>
         <h3>Upload Evidence</h3>
         <p>Choose a document or image from your device to report a suspected scam.</p>
-        <button class="btn btn-primary btn-block" style="margin-top:0;" onclick="event.stopPropagation();openReportEvidenceUpload()">Upload Evidence</button>
+        <button class="btn btn-primary btn-block u-margin-top-0" data-onclick="stopPropagation();openReportEvidenceUpload()">Upload Evidence</button>
       </div>
-      <div class="doc-option-card" onclick="openReportEvidenceCamera()">
+      <div class="doc-option-card" data-onclick="openReportEvidenceCamera()">
         <div class="doc-option-icon">📷</div>
         <h3>Scan / Capture Evidence</h3>
         <p>Use your camera to capture a clear image of the property or document.</p>
-        <button class="btn btn-primary btn-block" style="margin-top:0;" onclick="event.stopPropagation();openReportEvidenceCamera()">Open Camera</button>
+        <button class="btn btn-primary btn-block u-margin-top-0" data-onclick="stopPropagation();openReportEvidenceCamera()">Open Camera</button>
       </div>
     </div>` : '';
 
   const headerSubtitle = kind === 'reports'
-    ? `<div class="tagline" style="margin-top:8px; max-width:960px; line-height:1.4; opacity:0.92;">See a scam? Snap it, report it, stop it. Expose the fake and protect your neighborhood.</div>`
+    ? `<div class="tagline u-margin-top-8px-max-width-960px-line-he-c68b2">See a scam? Snap it, report it, stop it. Expose the fake and protect your neighborhood.</div>`
     : '';
 
   return `
-  <div class="header" style="padding-bottom:20px;">
+  <div class="header u-padding-bottom-20px">
     <div class="header-top">
-      <button class="icon-btn" onclick="nav('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="icon-btn" data-onclick="nav('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="logo-badge"><img src="${LOGO_URL}" alt="Karachi Property Trust"></div>
     </div>
-    <div class="brand-block"><div class="brand" style="font-size:19px;">${cfg.title}</div>${headerSubtitle}</div>
+    <div class="brand-block"><div class="brand u-font-size-19px">${cfg.title}</div>${headerSubtitle}</div>
   </div>
   <main>${kind==='reports'?reportOptions:''}${kind==='verifications'?'<div class="section-title">VERIFIED PROPERTY</div>':''}${rows}</main>`;
 }

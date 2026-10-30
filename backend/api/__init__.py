@@ -10,12 +10,13 @@ To add an endpoint: create ``backend/api/<resource>.py`` with a ``bp``, add it t
 """
 from flask import Flask
 
-from backend.api import chat, health, verification
+from backend.api import account, admin, admin_totp, auth, chat, health, messages, verification
 
-RESOURCES = (chat, health, verification)
+RESOURCES = (chat, health, verification, auth, account, admin, admin_totp, messages)
 
 
 def register_api(app: Flask) -> None:
     for module in RESOURCES:
         app.register_blueprint(module.bp, url_prefix="/api/v1", name=f"v1_{module.bp.name}")
-        app.register_blueprint(module.bp, url_prefix="/api", name=f"legacy_{module.bp.name}")
+        if not getattr(module, "V1_ONLY", False):  # auth/admin never get a legacy alias
+            app.register_blueprint(module.bp, url_prefix="/api", name=f"legacy_{module.bp.name}")

@@ -5,6 +5,11 @@ import { escapeHtml } from '../core/html.js';
 import OwnerVerification from '../domain/ownerVerification.js';
 import { checkOwnerName } from '../services/verificationApi.js';
 import { ownerState, state } from '../state/store.js';
+import { loadSessionUser, isGuestUser } from '../services/sessionUser.js';
+
+// Display only (the server refuses guests too): guests are told to log in instead of seeing a form that would fail.
+let ownerGuest = false;
+loadSessionUser().then((user) => { ownerGuest = isGuestUser(user); });
 
 export function loadOwnerVerificationData(retry){
   if(retry){ ownerState.store=null; ownerState.error=null; ownerState.promise=null; }
@@ -13,12 +18,12 @@ export function loadOwnerVerificationData(retry){
     .then(store=>{
       ownerState.store=store;
       ownerState.promise=null;
-      if(state.view==='ownerverify') render();
+      if(state.view==='ownerverify' || state.view==='listing') render();
     })
     .catch(error=>{
       ownerState.error=error && error.message ? error.message : 'Unable to load the property CSV files.';
       ownerState.promise=null;
-      if(state.view==='ownerverify') render();
+      if(state.view==='ownerverify' || state.view==='listing') render();
     });
 }
 
@@ -92,7 +97,7 @@ export function setOwnerClaim(value){ ownerState.claim=value; }
 
 export function renderOwnerVerification(){
   const dataStatus=ownerState.error
-    ? `<div class="owner-data-error">${escapeHtml(ownerState.error)} <button class="btn btn-outline" onclick="loadOwnerVerificationData(true)">Retry</button></div>`
+    ? `<div class="owner-data-error">${escapeHtml(ownerState.error)} <button class="btn btn-outline" data-onclick="loadOwnerVerificationData(true)">Retry</button></div>`
     : ownerState.store
       ? `<div class="owner-data-loaded">Loaded ${ownerState.store.recordCount.toLocaleString()} property records, including ${ownerState.store.pricedCount.toLocaleString()} priced records, from the five CSV datasets.</div>`
       : '<div class="owner-data-loaded" role="status">Loading property records from the CSV files…</div>';
@@ -106,8 +111,8 @@ export function renderOwnerVerification(){
         <div class="owner-panel-heading"><h2>Registered Property</h2><span>${escapeHtml(record.propertyId)}</span></div>
         <div class="owner-claim">
           <label for="ownerClaimName">Check an owner name</label>
-          <input id="ownerClaimName" type="text" maxlength="120" autocomplete="off" spellcheck="false" value="${escapeHtml(ownerState.claim)}" placeholder="Full name as on the document" oninput="setOwnerClaim(this.value)">
-          <button class="btn btn-outline" type="button" onclick="checkOwnerClaim()">Check name</button>
+          ${ownerGuest ? '<p class="owner-disclaimer" role="status">Owner name checks need a free account. <a href="/login">Log in</a> or <a href="/signup">sign up</a>.</p>' : `<input id="ownerClaimName" type="text" maxlength="120" autocomplete="off" spellcheck="false" value="${escapeHtml(ownerState.claim)}" placeholder="Full name as on the document" data-oninput="setOwnerClaim(this.value)">
+          <button class="btn btn-outline" type="button" data-onclick="checkOwnerClaim()">Check name</button>`}
           <div id="ownerCheckOutput" aria-live="polite"></div>
           <p class="owner-disclaimer">The registered owner is checked on our server and is never shown. The answer is indicative, not proof.</p>
         </div>
@@ -136,7 +141,7 @@ export function renderOwnerVerification(){
         <div class="owner-panel-heading"><h2>Assumption-Based Price Forecast</h2><span>5% per year</span></div>
         <div class="owner-forecast-input">
           <label for="ownerForecastYears">Forecast horizon (years)</label>
-          <input id="ownerForecastYears" type="number" min="0" max="50" step="1" inputmode="numeric" value="${escapeHtml(ownerState.forecastYears)}" oninput="setOwnerForecastYears(this.value)">
+          <input id="ownerForecastYears" type="number" min="0" max="50" step="1" inputmode="numeric" value="${escapeHtml(ownerState.forecastYears)}" data-oninput="setOwnerForecastYears(this.value)">
         </div>
         <div id="ownerForecastOutput" class="owner-forecast-output" aria-live="polite"><div class="owner-forecast-empty">Enter a whole number of years to view the scenario.</div></div>
         ${record.price==null?'<p class="owner-disclaimer">This property has no recorded sale price. Its estimate uses priced properties in the same area/type where available, then falls back to area or global averages.</p>':''}
@@ -145,18 +150,18 @@ export function renderOwnerVerification(){
     </div>` : (ownerState.lookupError ? `<div class="owner-lookup-error" role="alert">${escapeHtml(ownerState.lookupError)}</div>` : '');
 
   return `
-  <div class="header" style="padding-bottom:20px;">
+  <div class="header u-padding-bottom-20px">
     <div class="header-top">
-      <button class="icon-btn" onclick="nav('home')" aria-label="Back to home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="icon-btn" data-onclick="nav('home')" aria-label="Back to home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="logo-badge"><img src="${LOGO_URL}" alt="Karachi Property Trust"></div>
     </div>
-    <div class="brand-block"><div class="brand" style="font-size:19px;">Owner Verification System</div><div class="tagline">Look up property record checks and test an owner name against the registry</div></div>
+    <div class="brand-block"><div class="brand u-font-size-19px" role="heading" aria-level="1">Owner Verification System</div><div class="tagline">Look up property record checks and test an owner name against the registry</div></div>
   </div>
   <main class="owner-verification">
     <section class="owner-lookup-panel">
       <div class="owner-lookup-heading"><div><h2>Find a Property Record</h2><p>Search by the Property ID printed in the CSV datasets.</p></div></div>
-      <form class="owner-lookup-form" onsubmit="event.preventDefault();lookupOwnerProperty();">
-        <div><label for="ownerPropertyId">Property ID</label><input id="ownerPropertyId" type="text" value="${escapeHtml(ownerState.id)}" placeholder="e.g. DEMO-KPT-8103" autocomplete="off" spellcheck="false" oninput="setOwnerPropertyId(this.value)"></div>
+      <form class="owner-lookup-form" data-onsubmit="preventDefault();lookupOwnerProperty()">
+        <div><label for="ownerPropertyId">Property ID</label><input id="ownerPropertyId" type="text" value="${escapeHtml(ownerState.id)}" placeholder="e.g. DEMO-KPT-8103" autocomplete="off" spellcheck="false" data-oninput="setOwnerPropertyId(this.value)"></div>
         <button class="btn btn-primary" type="submit" ${ownerState.store?'':'disabled'}>Search records</button>
       </form>
       <div class="owner-dataset-summary">${dataStatus}${sourceList}</div>

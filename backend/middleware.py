@@ -1,6 +1,8 @@
 """Cross-cutting HTTP concerns: CORS and per-IP rate limiting."""
 from __future__ import annotations
 
+import logging
+
 from flask import Flask, request
 
 from backend.config import Settings
@@ -8,10 +10,13 @@ from backend.errors import ApiError
 from backend.security.ratelimit_store import MemoryStore, Store, UpstashStore
 
 
-def build_store(settings: Settings) -> Store:
+def build_store(settings: Settings, fail_closed: bool = False) -> Store:
     """Shared Redis store when configured (production), otherwise per-process memory."""
     if settings.redis_rest_url and settings.redis_rest_token:
-        return UpstashStore(settings.redis_rest_url, settings.redis_rest_token)
+        try:
+            return UpstashStore(settings.redis_rest_url, settings.redis_rest_token, fail_closed=fail_closed)
+        except ValueError as exc:   # unsafe URL: the token is never sent; fall back to per-process counters
+            logging.getLogger("kpt.ratelimit").error("rate-limit store disabled, using memory: %s", exc)
     return MemoryStore()
 
 

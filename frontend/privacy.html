@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy &amp; cookies · Karachi Property Trust</title>
+<meta name="description" content="Which cookies Karachi Property Trust uses, why, and how to control them.">
+<script src="/js/theme-init.js"></script>
+<link rel="stylesheet" href="/css/privacy.css">
+<link rel="stylesheet" href="/css/consent.css">
+</head>
+<body>
+<main class="priv">
+  <a class="priv-back" href="/">← Back to the site</a>
+  <h1>Privacy &amp; cookies</h1>
+  <p class="lead">This is a demo site with fictional property data. We keep as little as possible, and we never put names, emails, passwords, roles or anything you type into a cookie.</p>
+
+  <section aria-labelledby="h-choices">
+    <h2 id="h-choices">Your choices</h2>
+    <form id="choices" class="card" novalidate>
+      <label class="row"><input type="checkbox" checked disabled> <span><strong>Essential</strong> Always on: sign-in session, security token, your cookie choice.</span></label>
+      <label class="row"><input type="checkbox" id="c-pref"> <span><strong>Preferences</strong> Remember your theme, filters, recently viewed listings, chat conversation and “Remember me”.</span></label>
+      <label class="row"><input type="checkbox" id="c-analytics"> <span><strong>Analytics</strong> Reserved. This site does not collect analytics today.</span></label>
+      <div class="actions"><button class="btn" type="submit">Save choices</button><span id="choices-status" role="status"></span></div>
+    </form>
+  </section>
+
+  <section aria-labelledby="h-table">
+    <h2 id="h-table">Every cookie we use</h2>
+    <div class="table-wrap">
+    <table id="cookie-table">
+      <thead><tr><th scope="col">Cookie</th><th scope="col">Category</th><th scope="col">Purpose</th><th scope="col">Lifetime</th><th scope="col">Set by</th></tr></thead>
+      <tbody>
+        <tr><td><code>__Host-kpt_session</code></td><td>Essential</td><td>Keeps you signed in. Only a hash of its random value is stored on the server.</td><td>Browser session (server limits apply)</td><td>Server</td></tr>
+        <tr><td><code>__Host-kpt_csrf</code></td><td>Essential</td><td>Protects forms and account actions from forged requests.</td><td>Browser session</td><td>Server</td></tr>
+        <tr><td><code>kpt_consent</code></td><td>Essential</td><td>Remembers your cookie choice and the policy version.</td><td>12 months</td><td>Your browser</td></tr>
+        <tr><td><code>__Host-kpt_remember</code></td><td>Preferences</td><td>“Remember me”: keeps you signed in on this device. Replaced every time it is used; never issued to admins.</td><td>30 days</td><td>Server, only after you tick Remember me</td></tr>
+        <tr><td><code>__Host-kpt_chat</code></td><td>Preferences</td><td>Random id so the assistant can continue your conversation after a refresh or return visit.</td><td>7 days</td><td>Server</td></tr>
+        <tr><td><code>kpt_prefs</code></td><td>Preferences</td><td>Short codes: theme, language, filters, sort, recently viewed, compare and saved ids, dismissed tips.</td><td>6 months</td><td>Your browser</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-device">
+    <h2 id="h-device">On this device</h2>
+    <div class="card">
+      <p>“Forget me” removes every non-essential cookie here, ends “Remember me” on this device and clears the stored chat.</p>
+      <button class="btn danger" type="button" id="forget">Forget me on this device</button> <span id="forget-status" role="status"></span>
+    </div>
+  </section>
+
+  <section id="account" aria-labelledby="h-account" hidden>
+    <h2 id="h-account">Your account</h2>
+    <div class="card">
+      <h3>Signed-in devices</h3>
+      <ul id="devices" class="devices"></ul>
+      <p id="devices-empty" hidden>No devices are remembered. Tick “Remember me” when you log in to add this one.</p>
+      <button class="btn" type="button" id="logout-all">Log out of all devices</button> <span id="logout-status" role="status"></span>
+    </div>
+    <form id="delete-form" class="card" novalidate>
+      <h3>Delete my data</h3>
+      <p>Deletes your account, saved preferences and remembered devices. This cannot be undone.</p>
+      <label for="del-pw">Your password</label>
+      <input id="del-pw" type="password" autocomplete="current-password" maxlength="1024">
+      <p class="hint">Signed in with Google only? Use “Forgot password” on the login page to set a password first.</p>
+      <button class="btn danger" type="submit">Delete my account and data</button> <span id="delete-status" role="status"></span>
+    </form>
+  </section>
+  <p class="foot">Policy version 1 · Questions? Contact us through the website.</p>
+</main>
+<script type="module" src="/js/privacy-page.js"></script>
+<script type="module" src="/js/consent-banner.js"></script>
+</body>
+</html>

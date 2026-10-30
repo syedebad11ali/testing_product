@@ -1,6 +1,5 @@
 /* features/theme.js — Light/dark theme toggle. */
-import { STORAGE_KEYS } from '../config.js';
-import { local } from '../core/storage.js';
+import { writePrefs } from '../core/cookies.js';
 
 export function syncThemeControls(){
   const isDark = document.documentElement.dataset.theme==='dark';
@@ -15,6 +14,6 @@ export function syncThemeControls(){
 export function toggleTheme(){
   const theme = document.documentElement.dataset.theme==='dark'?'light':'dark';
   document.documentElement.dataset.theme = theme;
-  local.setRaw(STORAGE_KEYS.theme, theme);
+  writePrefs({ theme }); // cookie only with Preferences consent; otherwise remembered for this visit
   syncThemeControls();
 }

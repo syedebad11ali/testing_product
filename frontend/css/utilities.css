@@ -1,0 +1,62 @@
+/* utilities.css — generated from former inline style attributes (CSP: no inline styles). !important keeps the old
+ * inline-style priority over component rules. Add new rules by hand with meaningful names; do not re-add style="". */
+.u-align-items-center-gap-6px-flex-wrap-wrap{align-items:center!important;gap:6px!important;flex-wrap:wrap!important}
+.u-color-var-bad{color:var(--bad)!important}
+.u-color-var-bad-margin-top-10px{color:var(--bad)!important;margin-top:10px!important}
+.u-color-var-mute{color:var(--mute)!important}
+.u-color-var-ok{color:var(--ok)!important}
+.u-color-var-warn{color:var(--warn)!important}
+.u-cursor-default{cursor:default!important}
+.u-cursor-pointer{cursor:pointer!important}
+.u-display-flex-align-items-center-justif-54d19{display:flex!important;align-items:center!important;justify-content:center!important;font-size:20px!important}
+.u-display-flex-align-items-center-justif-91cb2{display:flex!important;align-items:center!important;justify-content:center!important;font-size:22px!important}
+.u-display-flex-flex-direction-column-gap-2bfd9{display:flex!important;flex-direction:column!important;gap:6px!important;flex-shrink:0!important}
+.u-display-flex-justify-content-space-between{display:flex!important;justify-content:space-between!important}
+.u-display-none{display:none!important}
+.u-flex-1-min-width-0{flex:1!important;min-width:0!important}
+.u-font-size-10px-font-weight-600-color-v-ce68f{font-size:10px!important;font-weight:600!important;color:var(--mute)!important}
+.u-font-size-11px-color-var-sub-line-heig-173aa{font-size:11px!important;color:var(--sub)!important;line-height:1.45!important;margin-top:10px!important}
+.u-font-size-12-5px-margin-12px-0-0{font-size:12.5px!important;margin:12px 0 0!important}
+.u-font-size-12px-color-var-sub-margin-bo-2da11{font-size:12px!important;color:var(--sub)!important;margin-bottom:8px!important}
+.u-font-size-12px-color-var-sub-margin-top-4px{font-size:12px!important;color:var(--sub)!important;margin-top:4px!important}
+.u-font-size-13px-padding-7px-14px{font-size:13px!important;padding:7px 14px!important}
+.u-font-size-19px{font-size:19px!important}
+.u-font-size-22px{font-size:22px!important}
+.u-font-size-30px{font-size:30px!important}
+.u-font-weight-700-margin-top-8px{font-weight:700!important;margin-top:8px!important}
+.u-grid-template-columns-1fr-1fr-1fr{grid-template-columns:1fr 1fr 1fr!important}
+.u-height-24px{height:24px!important}
+.u-margin-bottom-10px{margin-bottom:10px!important}
+.u-margin-bottom-18px{margin-bottom:18px!important}
+.u-margin-top-0{margin-top:0!important}
+.u-margin-top-10px{margin-top:10px!important}
+.u-margin-top-10px-grid-template-columns-22d3b{margin-top:10px!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+.u-margin-top-12px{margin-top:12px!important}
+.u-margin-top-12px-text-align-left{margin-top:12px!important;text-align:left!important}
+.u-margin-top-14px-text-align-center{margin-top:14px!important;text-align:center!important}
+.u-margin-top-16px{margin-top:16px!important}
+.u-margin-top-18px-grid-template-columns-a41e4{margin-top:18px!important;grid-template-columns:1fr!important;gap:10px!important}
+.u-margin-top-20px{margin-top:20px!important}
+.u-margin-top-20px-margin-bottom-8px{margin-top:20px!important;margin-bottom:8px!important}
+.u-margin-top-6px{margin-top:6px!important}
+.u-margin-top-6px-font-style-italic{margin-top:6px!important;font-style:italic!important}
+.u-margin-top-8px-max-width-960px-line-he-c68b2{margin-top:8px!important;max-width:960px!important;line-height:1.4!important;opacity:0.92!important}
+.u-min-width-130px-font-weight-700{min-width:130px!important;font-weight:700!important}
+.u-opacity-65{opacity:.65!important}
+.u-padding-0-2px{padding:0 2px!important}
+.u-padding-4px-8px-font-size-11px-margin-0{padding:4px 8px!important;font-size:11px!important;margin:0!important}
+.u-padding-7px-10px-font-size-11px{padding:7px 10px!important;font-size:11px!important}
+.u-padding-7px-10px-font-size-11px-color-80d0c{padding:7px 10px!important;font-size:11px!important;color:var(--bad)!important;border-color:var(--bad)!important}
+.u-padding-8px-12px-font-size-11px-flex-s-ff380{padding:8px 12px!important;font-size:11px!important;flex-shrink:0!important}
+.u-padding-bottom-20px{padding-bottom:20px!important}
+.u-text-align-center-margin-top-14px{text-align:center!important;margin-top:14px!important}
+.u-text-align-center-margin-top-6px{text-align:center!important;margin-top:6px!important}
+.u-visibility-hidden{visibility:hidden!important}
+
+/* Tone colours (replace style="color:var(--tone)") */
+.tone-ok{color:var(--ok)}.tone-bad{color:var(--bad)}.tone-warn{color:var(--warn)}.tone-mute{color:var(--mute)}
+/* Photo backgrounds: the image URL arrives as --img via ui/dataStyle.js (CSSOM), the gradient comes from the class. */
+.bg-photo{background-image:var(--grad,linear-gradient(transparent,transparent)),var(--img,none)!important;background-color:#0f5566!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+.bg-grad-hero{--grad:linear-gradient(180deg,rgba(15,42,61,.18),rgba(15,42,61,.34))}
+.bg-grad-feat{--grad:linear-gradient(0deg,rgba(0,0,0,.24),rgba(0,0,0,.04))}
+.bg-grad-card{--grad:linear-gradient(0deg,rgba(0,0,0,.12),rgba(0,0,0,.02))}

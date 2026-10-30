@@ -1,0 +1,31 @@
+# Admin guide
+* Built-in account `admin_001`; password comes only from `ADMIN_001_PASSWORD` (hash stored). Production rejects weak values (14+ chars, 3+ character types, must not contain the username). Wrong passwords redirect to `/nice-try` with an identical response (see `docs/AUTH.md`).
+* `ADMIN_EMAILS` promotes Google-verified emails only. Admin sessions are short (15 min idle / 2 h absolute) and admins never get remember-me.
+* `/admin` needs a valid admin session. Sensitive actions (disable/enable, role change) re-ask for the admin password, revoke the target's sessions and are audit logged.
+* Moderation: ban/suspend users, review message reports (`docs/MESSAGING.md`). Reports and messages are kept indefinitely until the owner approves retention periods (`MESSAGE_RETENTION_DAYS=0`).
+* **Two-factor (TOTP) and step-up: built in session 16, optional by default.** See "Two-factor authentication" below. **Not built:** recovery codes, QR code images, hardware keys.
+
+## Two-factor authentication (TOTP) and step-up
+**What it does.** An admin can enrol an authenticator app (Security panel on `/admin`). Once TOTP is *active* for that admin, these actions need a fresh 6-digit code **in addition to** the password re-entry that already existed: ban / suspend / reinstate / disable / enable (class `moderation`), role changes (`role_change`) and CSV export (`csv_export`). Reading the admin screens does not need a code.
+
+**How a proof works.** `POST /api/v1/admin/totp/stepup {code, action}` checks the code and returns a random one-time `proof`. The next sensitive request carries it as `stepup`. The server accepts it only if it was issued to the same admin, to the same login session, for the same action class, within `STEPUP_TTL_S` (default 120 s) and has not been used. Anything else gives the same `403 stepup_required`. A code is accepted at most once (the last accepted 30 s time step is stored; a repeated or older code fails). 8 code attempts per 5 minutes per admin and per IP are allowed; the limiter trips with 429 and an audit entry, and uses a fail-closed store in production.
+
+**Secrets.** Stored encrypted (Fernet) with `TOTP_ENCRYPTION_KEY`. Missing or invalid key => enrolment, step-up and disable return `503 totp_unavailable` (fail closed; there is no default key and nothing is stored in plaintext). The setup key is shown once at enrolment and never returned again; it is not logged. Audit entries (`totp_enroll_started`, `totp_enabled`, `totp_disabled`, `totp_stepup_ok`, `totp_failed`, `totp_rate_limited`, `totp_reset_by_operator`) never contain secrets, codes or proofs. No QR image is produced (no QR library is installed): the app shows the key and `otpauth://` URI for manual entry.
+
+**Set up the key (owner).** Generate once and store it as a secret in your host (variable name only here):
+`python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` then set `TOTP_ENCRYPTION_KEY` in Vercel (and `.env` locally). Do not commit it or paste it into chats or tickets.
+
+**Rotating the key.** Fernet cannot read old secrets with a new key. After changing the key every enrolled admin gets `503 totp_unavailable` until their second factor is reset (`scripts/reset_admin_totp.py`) and re-enrolled. Plan rotation as a maintenance step: set the new key, reset each admin, enrol again. Losing the key has the same effect.
+
+**Lost authenticator / recovery for `admin_001` (tested).** There is deliberately no web bypass and no recovery code. An operator with shell access and the real `DATABASE_URL` runs
+`python scripts/reset_admin_totp.py --user admin_001` (dry run) and then `... --user admin_001 --confirm RESET`. That deletes the secret and pending proofs, revokes every session of that admin, and writes `totp_reset_by_operator` to the audit log. The admin then logs in with the password and enrols a new device. If you also lost the password, reset `ADMIN_001_PASSWORD` and redeploy as before. Tested in `tests/backend/test_admin_totp.py::test_operator_recovery_for_admin_001`.
+
+**Making it mandatory (`ADMIN_TOTP_REQUIRED=1`).** Default is off. When on, admins who have not enrolled can still log in, read, and enrol, but the sensitive actions above return `403 totp_enrollment_required` until they do. Recommended order: (1) set `TOTP_ENCRYPTION_KEY`, (2) enrol `admin_001` and every other admin, (3) rehearse `reset_admin_totp.py` on a copy of the database, (4) only then set `ADMIN_TOTP_REQUIRED=1`.
+
+**Other rules.** The bootstrap admin (`admin_001`) and last-active-admin protections are unchanged and checked before a proof is consumed. Demoting an admin deletes their TOTP secret. Banning a user does not touch TOTP rows. CSV export is `POST /api/v1/admin/export/<kind>.csv` with a proof; the old GET link is refused with `stepup_required` once TOTP is active or required.
+
+
+## Edge cases and prerequisites (session 17 review)
+* **`pyotp` missing or not importable:** the application still starts. Every TOTP operation fails closed with `503 totp_unavailable` (same path as a missing/invalid `TOTP_ENCRYPTION_KEY`), nothing is stored, and the rest of the admin panel and login keep working while `ADMIN_TOTP_REQUIRED=0`. Regression test: `tests/backend/test_totp_missing_library.py`. With an existing active enrolment the proof check itself needs no library, but issuing new proofs does, so install `pyotp` before enforcing.
+* **Admins who sign in only with Google have no password.** Password re-authentication therefore fails (`403 reauth_failed`) for them, so they cannot enrol TOTP and cannot use any sensitive action (ban, reinstate, disable/enable, role change). Fix per admin before enforcing: give them a password with the forgot-password flow (documented in `docs/AUTH.md`), then enrol. A password-free re-auth design (for example fresh Google sign-in) is **not implemented**. Test: `GoogleOnlyAdminTests` in `tests/backend/test_admin_totp.py`.
+* **Ordering:** request-shape validation of a ban (`kind`, `days`) runs before the one-time proof is consumed, so a malformed request does not waste a code (codes are replay-protected per 30 s step). State checks (already banned / not banned) deliberately stay after the proof.
