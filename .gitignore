@@ -20,3 +20,12 @@ tests/.results/
 # local wheel cache used for offline installs (never commit)
 offline_wheels/
 .local/
+# Protect environment secrets
+.env
+.env.*
+!.env.example
+
+# Also protect nested environment files
+**/.env
+**/.env.*
+!**/.env.example
