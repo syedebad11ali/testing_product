@@ -39,4 +39,3 @@ body.admin-page{display:block;padding:16px;max-width:1100px;margin:0 auto}
 .admin-thread{white-space:pre-wrap;word-break:break-word;border:1px solid var(--line);border-radius:var(--r-md);padding:12px;background:var(--surface);max-height:320px;overflow:auto}
 .admin-ban{white-space:normal!important;min-width:180px;font-size:.8rem}
 .notfound{max-width:32rem;margin:15vh auto;padding:1.5rem;text-align:center}
-.auth-guest{display:inline-block;padding:2px 10px;border:1px solid currentColor;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}

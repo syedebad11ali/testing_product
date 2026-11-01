@@ -1,6 +1,34 @@
 # Changelog
 Reconstructed from `HANDOFF.md` (the archive has no git history). Newest first.
 
+## Unreleased - G6.2a: honest property upload, synthetic owner data, guest owner card
+- **2a-1:** the property page's fake "Upload document to check" (constant "Reference match: Yes") is replaced by an honest unavailable notice.
+- **2a-3 (reconstructed):** p1-p8 owners/CNICs are synthetic (`Demo Person ...`, `00000-` CNICs), placeholders and test literals updated (assertions unchanged, outcomes proven identical); the detail page's owner card is hidden from guests / signed-out / unresolved sessions (display-only; `properties.js` is public). Tests: `syntheticOwnerData` (9), `propertyOwnerVisibility` (7), `guest_owner_privacy_test.py` (22). Baseline defect fixed: `camera_upload_test.py` `write_text` encoding.
+- **Not changed / open:** private dataset, xlsx, notebooks; D2, D3/D4, D6, D7. See `docs/G6_PHASE2A3_REMEDIATION_COMPLETE.md`.
+
+## Unreleased - G6.1: document verification access and history
+- **Gates:** every document-verification, camera and upload action needs an account session; guests and signed-out visitors get the "Login required" dialog (G6.1a).
+- **History:** document-check history is kept only for a signed-in account, bound to it without storing its id, and cleared at logout, Exit and account change (G6.1b).
+- **Test:** `tests/browser/camera_upload_test.py` runs as a registered user with real camera capture and four upload cases (G6.1c, **reconstructed**, not the original lost patch).
+- **Docs:** known-issues and audit updated (G6.1d). See `docs/G6_1_INTEGRATION_HANDOFF.md`.
+
+## Unreleased - G5: account-owned favorites and preferences
+- **Favorites:** saving needs a registered account (login dialog for guests); the list is stored on the account via `PUT /auth/prefs` (`remove.saved`, 409 `saved_limit`), loaded after the session resolves and cleared on logout; the old browser-wide key is deleted, not migrated.
+- **Home filters:** area / type / sort are per account (`GET|PUT /auth/prefs`, `remove.fields`), never stored for guests and no longer in the shared preference cookie.
+- **Tests:** NEW `favoritesAuthGate`, `favoritesServer`, extended `homePrefs`, `test_prefs_saved`, `test_prefs_filters`, browser `g5_account_data_test.py` (in CI); `favorites.test.js` dark-heart expectation corrected to the CSS.
+- **Final correction:** `tests/browser/prefs_test.py` updated to the G5 design (a guest filters freely, nothing is persisted or restored, with or without Preferences consent; tampered-cookie check kept). No application code changed.
+- **Known:** see `G5_FINAL_REPORT.md`.
+
+## Unreleased - G4: chatbot guest restrictions (main chatbot + embeddable widget)
+- **Widget:** 401 `auth_required` / 403 `guest_not_allowed` show one fixed "Login required" card (no raw backend text, no assistant bubble, no retry/resend, composer locked); 403 `password_change_required` links to the existing `/login?change=1`; link = KPT origin + `/login?next=%2Fchatbot-demo`; other errors unchanged. **Third-party embeds cannot be authenticated** (owner decision: no credentialed CORS, cookies stay SameSite=Lax); they always show the card and send visitors to KPT's site.
+- **Tests:** NEW `widget_auth_test.py` (58) and `g4_widget_test.py` (21), `g4_chatbot_test.py` 'Ask the assistant' step unconditional, `csp_test.py` widget assertion tightened; both new tests in CI.
+- **Known unchanged:** `favorites.test.js`, `pyotp` missing, browser `creators_test` / `camera_upload_test`.
+
+## Unreleased - Google button fits phones
+- **Fix:** the official Google sign-in button is drawn at the width its container really has (kept inside Google's 200-400 px limits) and redrawn on resize or when the hidden sign-up form is shown, instead of a fixed 400 px that overflowed 320/360 px screens (`frontend/js/auth-page.js` `googleButtonWidth`, `frontend/css/login.css` `.gbox` containment). Reproduced before the fix (button -40...360 px in a 16...304 px form).
+- **Tests:** new `tests/browser/google_button_responsive_test.py` (35 checks at 320/360/768/1280 px, stubbed Google script, fails on the old code; registered in CI) and `tests/frontend/googleButtonWidth.test.js` (3). Run: `npm test` 224/224, `test_ci_config`, browser `login`, `login_busy`, `cookies`, `csp` OK. Full backend and the other browser tests were not re-run (no backend change).
+- **Not verified:** the real Google iframe and live sign-in (stub only), TOTP (`pyotp` missing), PostgreSQL, real OCR/PDF extraction.
+
 ## Unreleased - Final consolidated package
 - Packaged `karachi-property-trust-final.zip` (merged v2 + T5a/T5b + T6a). No code changes in this step; docs record the remaining unverified items (TOTP, live Google, PostgreSQL, real OCR/PDF, camera_upload upload branch, Vercel routing, live email/AI, dependency scans).
 
@@ -145,3 +173,10 @@ Reconstructed from `HANDOFF.md` (the archive has no git history). Newest first.
 
 ## Earlier
 - Sessions 1-12: accounts, sessions, CSRF, admin, Google sign-in, forgot-password, remember-me, cookie consent, messaging with reports/blocks/moderation, seller listings, retention tooling (disabled by default). See `HANDOFF.md`.
+
+
+## G3 completion review
+- Fixed: closing the login-required dialog opened from the side drawer no longer returns focus to the sliding drawer item; focus goes to the menu button (`loginPrompt.js`).
+- Added: end-to-end browser test `tests/browser/g3_integration_test.py` (guest login journey, failed login, browsing, mocked Google, hostile `next`, dialog layouts); registered in CI.
+- Changed (test only): `csp_test.py` runs account-only views as a registered user and checks the guest dialog for CSP violations.
+- Known, unchanged: `favorites.test.js` dark heart stroke; `pyotp` missing; baseline browser failures `smoke`, `camera_upload`, `creators`; live Google OAuth not verified.

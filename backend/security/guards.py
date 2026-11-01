@@ -60,22 +60,39 @@ def register_session_cookies(app: Flask) -> None:
         return resp
 
 
+def _check_account(allow_pending_password_change: bool, allow_guest: bool) -> dict:
+    """The one implementation of the account checks, shared by ``login_required`` and ``require_account``:
+    anonymous -> 401 ``auth_required``; pending password change -> 403 ``password_change_required``;
+    guest -> 403 ``guest_not_allowed``. Returns the session of a registered user or admin."""
+    sess = current_session()
+    if not sess:
+        raise ApiError("Please log in to continue.", 401, "auth_required")
+    if sess["must_change_password"] and not allow_pending_password_change:
+        raise ApiError("You must change your password before continuing.", 403, "password_change_required")
+    if sess["role"] == "guest" and not allow_guest:
+        raise ApiError("Create an account or log in to use this feature.", 403, "guest_not_allowed")
+    return sess
+
+
 def login_required(allow_pending_password_change: bool = False, allow_guest: bool = False):
     """Signed-in users only. A guest session (``role == "guest"``) is rejected with 403 unless the route opts in with
     ``allow_guest=True``; so every private/write route is closed to guests by default."""
     def deco(fn):
         @wraps(fn)
         def wrapper(*a, **kw):
-            sess = current_session()
-            if not sess:
-                raise ApiError("Please log in to continue.", 401, "auth_required")
-            if sess["must_change_password"] and not allow_pending_password_change:
-                raise ApiError("You must change your password before continuing.", 403, "password_change_required")
-            if sess["role"] == "guest" and not allow_guest:
-                raise ApiError("Create an account or log in to use this feature.", 403, "guest_not_allowed")
+            _check_account(allow_pending_password_change, allow_guest)
             return fn(*a, **kw)
         return wrapper
     return deco
+
+
+def require_account(allow_pending_password_change: bool = False, allow_guest: bool = False) -> dict | None:
+    """Same checks as ``login_required`` for use INSIDE a handler (routes that also serve CORS ``OPTIONS`` pre-flights,
+    which carry no cookies and must keep answering). A pre-flight returns ``None`` without any check; every other method
+    raises the same ``ApiError`` as the decorator and otherwise returns the session."""
+    if request.method == "OPTIONS":
+        return None
+    return _check_account(allow_pending_password_change, allow_guest)
 
 
 def role_required(*roles: str):

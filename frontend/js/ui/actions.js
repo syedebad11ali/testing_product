@@ -13,7 +13,7 @@ import { renderList, scrollToGrid, setArea, setSearch, setSort, setTypeFilter, t
 import { checkOwnerClaim, loadOwnerVerificationData, lookupOwnerProperty, setOwnerClaim, renderOwnerForecast, setOwnerForecastYears, setOwnerPropertyId } from '../features/ownerVerification.js';
 import { hidePromo } from '../features/promo.js';
 import { chatWithSeller } from '../features/sellerChat.js';
-import { handleDocUpload, saveManualInfo } from '../features/property.js';
+import { saveManualInfo, showOwnerLogin } from '../features/property.js';
 import { toggleTheme } from '../features/theme.js';
 import { captureDocumentFrame, closeDocumentCamera, docHandleCameraCapture, retakeDocumentCapture, startDocumentCamera, switchDocumentCamera, useCapturedDocument } from '../features/verifyDocument/camera.js';
 import { docDeleteHistory, docGoStep, docHandleFile, docPickAutoType, docPickMethod, docPickType, docRemoveFile, docSetField, docStartManualCheck, docStartSample, docViewHistory, openReportEvidenceCamera, openReportEvidenceUpload, openVerifyDocument } from '../features/verifyDocument/flow.js';
@@ -39,7 +39,6 @@ export const ACTIONS = {
   docStartManualCheck,
   docStartSample,
   docViewHistory,
-  handleDocUpload,
   hidePromo,
   loadOwnerVerificationData,
   lookupOwnerProperty,
@@ -57,6 +56,7 @@ export const ACTIONS = {
   renderOwnerForecast,
   retakeDocumentCapture,
   saveManualInfo,
+  showOwnerLogin,
   scrollToGrid,
   setArea,
   setOwnerClaim,

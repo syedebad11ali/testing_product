@@ -3,6 +3,8 @@ import { render } from '../../app/router.js';
 import { escapeHtml } from '../../core/html.js';
 import { docGoStep, startAutomaticVerification } from './flow.js';
 import { docState } from '../../state/store.js';
+import { isAccountSession } from '../../services/sessionUser.js';
+import { gateThen } from './access.js';
 
 /* ---------- SCAN / CAPTURE DOCUMENT (browser camera) ----------
    Uses navigator.mediaDevices.getUserMedia — a plain web API, no
@@ -297,7 +299,7 @@ function handleCameraStream(stream){
   }
 }
 
-export function startDocumentCamera(){
+export function startDocumentCamera(){ if(!isAccountSession()) return gateThen(()=>startDocumentCamera());
   if(!isCameraSupported()){
     docState.cameraPhase='unavailable';
     docState.cameraError='This browser does not provide live camera access.';
@@ -326,7 +328,7 @@ export function startDocumentCamera(){
   });
 }
 
-export function switchDocumentCamera(){
+export function switchDocumentCamera(){ if(!isAccountSession()) return gateThen(()=>switchDocumentCamera());
   if(!isCameraSupported()) return;
 
   const newFacing = docState.cameraFacing==='environment' ? 'user' : 'environment';
@@ -394,7 +396,7 @@ export function assessCaptureQuality(canvas){
   }
 }
 
-export function captureDocumentFrame(){
+export function captureDocumentFrame(){ if(!isAccountSession()) return gateThen(()=>captureDocumentFrame());
   const video = document.getElementById('docCameraVideo');
 
   if(!video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth){
@@ -440,7 +442,7 @@ export function captureDocumentFrame(){
   render();
 }
 
-export function docHandleCameraCapture(el){
+export function docHandleCameraCapture(el){ if(!isAccountSession()) return gateThen(()=>docHandleCameraCapture(el));
   const file=el && el.files && el.files[0];
   if(!file) return;
 
@@ -517,7 +519,7 @@ export function closeDocumentCamera(){
   docGoStep('landing');
 }
 
-export function useCapturedDocument(){
+export function useCapturedDocument(){ if(!isAccountSession()) return gateThen(()=>useCapturedDocument());
   const dataUrl=docState.capturedImage;
   if(!dataUrl) return;
 

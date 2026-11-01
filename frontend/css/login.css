@@ -24,7 +24,7 @@ button,input{font:inherit}
 .copy{position:relative;z-index:2;max-width:560px}
 .eyebrow{color:var(--teal);font-weight:600;font-size:13px;letter-spacing:.03em;margin:0 0 14px}
 .login-page h1{font-size:clamp(32px,4.4vw,52px);line-height:1.15;margin:0 0 18px;font-weight:700}
-.lead{font-size:clamp(13px,1.35vw,16px);line-height:1.55;color:#e6eef3;margin:0 0 22px;max-width:480px}
+.lead{position:relative;z-index:4;font-size:clamp(13px,1.35vw,16px);line-height:1.55;color:#e6eef3;margin:0 0 22px;max-width:480px}
 
 .form{display:flex;flex-direction:column;gap:12px;max-width:420px}
 .form h2{margin:0;font-size:20px}
@@ -56,6 +56,8 @@ button,input{font:inherit}
 .btn.google:hover{background:#f3f6f9}
 .btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
 .btn.ghost:hover{background:rgba(31,199,160,.12)}
+.btn.dev-skip{border-style:dashed;opacity:.85}
+.btn.dev-skip[aria-pressed=true]{background:rgba(31,199,160,.18);opacity:1}
 .or{display:flex;align-items:center;gap:12px;color:#9fb6c4;font-size:12px}
 .or::before,.or::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.18)}
 .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:s .8s linear infinite}
@@ -74,7 +76,7 @@ button,input{font:inherit}
 .features b{display:block;font-size:11.5px;font-weight:600}
 .features small{display:block;font-size:10.5px;color:#b5c7d2}
 
-.art{position:relative;justify-self:end;width:min(40vw,460px);aspect-ratio:.92;margin-right:-3vw}
+.art{position:relative;z-index:1;justify-self:end;width:min(40vw,460px);aspect-ratio:.92;margin-right:-3vw}
 .hex-outer,.hex-inner{position:absolute;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 .hex-outer{inset:0;background:#fff;z-index:2}
 .hex-inner{inset:1.8%;overflow:hidden;background:var(--navy-2)}
@@ -126,7 +128,19 @@ button,input{font:inherit}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:1ms!important}}
 .gbox{display:flex;justify-content:center;min-height:44px}
+.gbox .nsm7Bb-HzV7m-LgbsSe-bN97Pc-sM5MNb{display:flex!important;align-items:center!important;gap:8px}
+.gbox .nsm7Bb-HzV7m-LgbsSe-Bz112c{display:flex!important;align-items:center!important;justify-content:flex-start!important;width:20px!important;height:20px!important;flex:0 0 20px}
+.gbox svg{width:20px!important;height:20px!important;flex:none!important}
+.gbox svg>g{clip-path:path("M44.72,20h-20.72v8h11.93l-.09.51c-.51,2.75-2.06,5.08-4.39,6.64-1.97,1.32-4.49,2.1-7.45,2.1-5.73,0-10.58-3.87-12.31-9.07-.44-1.32-.69-2.73-.69-4.18s.25-2.86.69-4.18c1.73-5.2,6.58-9.07,12.31-9.07,3.23,0,6.13,1.11,8.41,3.29l6.31-6.31c-3.81-3.55-8.79-5.73-14.72-5.73C15.4,2,7.96,6.93,4.34,14.12c-1.49,2.97-2.34,6.33-2.34,9.88s.85,6.91,2.34,9.88c3.62,7.19,11.06,12.12,19.66,12.12,5.94,0,10.92-1.97,14.56-5.33,4.16-3.83,6.56-9.47,6.56-16.17,0-1.56-.14-3.06-.4-4.5Z")!important}
+.gbox [role="button"]{padding:8px 14px!important;border-radius:999px!important;background:transparent!important;transition:background-color .15s ease}
+.gbox [role="button"]:hover{background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important;}
+.gbox .L6cTce{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .gbox.busy{opacity:.5;pointer-events:none}
+#form-login.dev-login-mode>.or,
+#form-login.dev-login-mode>.google,
+#form-login.dev-login-mode>.gbox,
+#form-login.dev-login-mode>[data-switch="signup"],
+#form-login.dev-login-mode>.demo-note{display:none!important}
 .linkbtn{align-self:flex-start;margin:-4px 0 0 14px;padding:4px 0;border:0;background:none;color:var(--teal);font-size:12px;font-weight:500;cursor:pointer;text-decoration:underline;min-height:28px}
 .banner.ok{background:rgba(31,199,160,.14);border-color:var(--teal);color:#c9f5ea}
 

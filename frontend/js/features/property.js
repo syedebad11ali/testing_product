@@ -1,17 +1,41 @@
 /* features/property.js — Property detail, per-property verification, report and the saved/verified/reports lists. */
 import { LOGO_URL } from '../config.js';
-import { CATS, CAT_ICONS, PROPERTIES, STATUS_META } from '../data/properties.js';
+import { CATS, CAT_ICONS, DEMO_PROPERTY_DISPLAY_STATUS, PROPERTIES, STATUS_META } from '../data/properties.js';
 import { overallStatus } from '../domain/propertyStatus.js';
-import { state } from '../state/store.js';
+import { favoritesRuntime, state } from '../state/store.js';
+import { isAccountSession } from '../services/sessionUser.js';
+import { showLoginRequired } from './loginPrompt.js';
 
 /* --- DETAIL --- */
+/** The owner card. Only a LOADED registered user or admin (`canSeeOwner === true`) sees the owner; anything else (guest, signed out, session still
+ *  loading, failed lookup, any non-true value) gets a neutral card with no name, initials or role (fail closed). Display-only: the demo records
+ *  are synthetic and `properties.js` is still a public file. */
+export function ownerCardHtml(p, canSeeOwner){
+  if(canSeeOwner === true) return `<div class="owner-card">
+      <div class="owner-avatar">${p.owner.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+      <div>
+        <div class="owner-name">${p.owner}</div>
+        <div class="owner-role">${p.ownerRole} · ${p.sellerType}</div>
+      </div>
+    </div>`;
+  return `<div class="owner-card" data-owner-hidden>
+      <div>
+        <div class="owner-name">Listed by ${p.sellerType}</div>
+        <div class="owner-role">Log in or sign up to see the owner details.</div>
+        <button type="button" class="btn btn-outline" data-onclick="showOwnerLogin()">Log in / Sign up</button>
+      </div>
+    </div>`;
+}
+/** The neutral card's button: the shared "Login required" dialog, no navigation, no request. */
+export function showOwnerLogin(){ showLoginRequired({ feature: 'Owner details' }); }
+
 export function renderDetail(id){
   const p = PROPERTIES.find(x=>x.id===id);
-  const ov = overallStatus(p);
+  const ov = DEMO_PROPERTY_DISPLAY_STATUS;
   return `
   <div class="hero bg-photo bg-grad-hero" data-bg="${p.image}">
     <button class="backbtn" data-onclick="nav('home')">←</button>
-    <button class="favbtn${state.saved.has(p.id)?' saved':''}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save property" data-onclick="toggleSave('${p.id}')">${state.saved.has(p.id)?'♥':'♡'}</button>
+    <button class="favbtn${state.saved.has(p.id)?' saved':''}" data-favorite-id="${p.id}" aria-pressed="${state.saved.has(p.id)}" aria-label="${state.saved.has(p.id)?'Remove from saved properties':'Save property'}" data-onclick="toggleSave('${p.id}')"><span class="favorite-heart" data-favorite-heart aria-hidden="true">${state.saved.has(p.id)?'♥':'♡'}</span></button>
   </div>
   <div class="detail-card">
     <div class="d-title" role="heading" aria-level="1">${p.title}</div>
@@ -33,13 +57,7 @@ export function renderDetail(id){
       ${p.scheme!=='—'?`<div><span class="lbl">Scheme</span><span class="val">${p.scheme}</span></div>`:''}
     </div>
 
-    <div class="owner-card">
-      <div class="owner-avatar">${p.owner.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
-      <div>
-        <div class="owner-name">${p.owner}</div>
-        <div class="owner-role">${p.ownerRole} · ${p.sellerType}</div>
-      </div>
-    </div>
+    ${ownerCardHtml(p, isAccountSession())}
 
     <details class="desc" open>
       <summary>Description &amp; Features ▾</summary>
@@ -47,7 +65,7 @@ export function renderDetail(id){
     </details>
 
     <div class="action-row">
-      <button class="btn btn-outline" data-onclick="toggleSave('${p.id}')">${state.saved.has(p.id)?'Saved':'Save Property'}</button>
+      <button class="btn btn-outline" data-favorite-id="${p.id}" data-favorite-label aria-pressed="${state.saved.has(p.id)}" data-onclick="toggleSave('${p.id}')"><span data-favorite-label>${state.saved.has(p.id)?'Saved':'Save Property'}</span></button>
       <button class="btn btn-outline" data-onclick="openChat()">Contact Seller</button>
       <button class="btn btn-primary" data-onclick="chatWithSeller('${p.id}')">Chat with seller</button>
       <button class="verify-cta-btn" data-onclick="nav('verify','${p.id}')">🛡 Verify This Property</button>
@@ -74,7 +92,7 @@ export function renderVerify(id){
         <div class="mini-form">
           <div class="section-title u-font-size-12-5px-margin-12px-0-0">Enter property &amp; owner details</div>
           <label for="cnic-${p.id}">Owner CNIC</label>
-          <input id="cnic-${p.id}" placeholder="e.g. 42101-1234567-1">
+          <input id="cnic-${p.id}" placeholder="e.g. 00000-0000000-0">
           <label for="plot-${p.id}">Plot / Survey Number</label>
           <input id="plot-${p.id}" value="${p.plot!=='—'?p.plot:''}">
           <label for="ownername-${p.id}">Owner Name</label>
@@ -84,18 +102,10 @@ export function renderVerify(id){
             <span class="saved-msg" id="savedmsg-${p.id}">✓ Saved</span>
           </div>
         </div>
-        <div class="upload-box">
-          <div class="u-font-size-12px-color-var-sub-margin-bo-2da11">Not sure whether a document is genuine? Upload it here to check.</div>
-          <label class="upload-btn" for="fileup-${p.id}">📎 Upload document to check</label>
-          <input type="file" id="fileup-${p.id}" data-onchange="handleDocUpload(this,'${p.id}')">
-          <div class="upload-filename" id="uf-${p.id}"></div>
-          <div class="processing" id="proc-${p.id}"><span class="spin"></span> Extracting &amp; checking document…</div>
-          <div class="auth-result" id="ar-${p.id}">
-            <div class="arow"><span>Reference on file</span><span>${p.plot}</span></div>
-            <div class="arow"><span>Reference match</span><span>${v.status==='issue'?'No':'Yes'}</span></div>
-            <div class="arow"><span>Result</span><span class="status-badge ${m.color}">${m.icon} ${m.label}</span></div>
-            <div class="auth-note">This is a document analysis, not an official government or bank authentication.</div>
-          </div>
+        <div class="upload-box" id="docnotice-${p.id}">
+          <div class="u-font-size-12px-color-var-sub-margin-bo-2da11">Checking an uploaded document against this specific property is not available on this page, and no file is read or checked here.</div>
+          <div class="auth-note">To check a document, use the document check. It compares the document with the records available in this app. Its result is indicative only and is not official ownership authentication.</div>
+          <button class="vcat-btn" type="button" data-onclick="openVerifyDocument()">Open document check</button>
         </div>`;
     }
     return `<div class="vitem" id="vitem-${key}">
@@ -155,18 +165,10 @@ export function saveManualInfo(id){
   msg._t = setTimeout(()=>{ msg.style.display='none'; }, 2200);
 }
 
-export function handleDocUpload(el,id){
-  const file = el.files[0]; if(!file) return;
-  document.getElementById('uf-'+id).textContent = 'File: '+file.name;
-  const proc = document.getElementById('proc-'+id), ar = document.getElementById('ar-'+id);
-  ar.classList.remove('show'); proc.classList.add('show');
-  setTimeout(()=>{ proc.classList.remove('show'); ar.classList.add('show'); }, 1500);
-}
-
 /* --- REPORT --- */
 export function renderReport(id){
   const p = PROPERTIES.find(x=>x.id===id);
-  const ov = overallStatus(p);
+  const ov = DEMO_PROPERTY_DISPLAY_STATUS;
   const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   return `
   <div class="header u-padding-bottom-20px">
@@ -203,15 +205,22 @@ export function renderReport(id){
 }
 
 /* --- SUB LISTS: My Verifications / Saved / Reports --- */
+/** G5.2: an empty saved list is only "you have none" once the account's list really loaded; otherwise say so instead of showing a false empty result. */
+function savedListEmptyText(){
+  if(favoritesRuntime.status==='ready') return 'You haven\u2019t saved any properties yet. Tap the heart icon on a listing to save it here.';
+  if(favoritesRuntime.status==='error') return 'We could not load your saved properties. Please try again.';
+  return 'Loading your saved properties\u2026';
+}
 export function renderSubList(kind){
   const cfg = {
     verifications:{title:'My Verifications', list:PROPERTIES, empty:'', actionLabel:'Continue Verification', actionFn:p=>`nav('verify','${p.id}')`},
-    saved:{title:'Saved Properties', list:PROPERTIES.filter(p=>state.saved.has(p.id)), empty:'You haven\u2019t saved any properties yet. Tap the heart icon on a listing to save it here.', actionLabel:'View Property', actionFn:p=>`nav('detail','${p.id}')`},
+    saved:{title:'Saved Properties', list:PROPERTIES.filter(p=>state.saved.has(p.id)), empty:savedListEmptyText(), actionLabel:'View Property', actionFn:p=>`nav('detail','${p.id}')`},
     reports:{title:'Report A Scam', list:PROPERTIES, empty:'', actionLabel:'View Report', actionFn:p=>`nav('report','${p.id}')`}
   }[kind];
 
   const rows = cfg.list.map(p=>{
-    const m = STATUS_META[overallStatus(p)];
+    const status = kind === 'reports' ? overallStatus(p) : DEMO_PROPERTY_DISPLAY_STATUS;
+    const m = STATUS_META[status];
     const verifiedImage = p.VerifiedImage || p.VerificationImage;
     return `<div class="vprop u-margin-bottom-10px">
       <div class="thumb bg-photo u-cursor-pointer" data-onclick="nav('detail','${p.id}')" data-bg="${verifiedImage}"></div>

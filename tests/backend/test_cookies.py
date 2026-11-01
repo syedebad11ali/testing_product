@@ -235,8 +235,11 @@ class AccountApiTests(unittest.TestCase):
 
 
 class ChatContinuityTests(unittest.TestCase):
+    """Chat continuity for a REGISTERED user: since G2 the chat endpoints refuse anonymous callers (401) and guests (403)."""
+
     def setUp(self):
         self.cl = Client()
+        self.cl.signup(pw=PW)
 
     def chat(self, message, **extra):
         return self.cl.c.post("/api/v1/chat", json={"message": message, **extra}, base_url=BASE)
@@ -266,7 +269,7 @@ class ChatContinuityTests(unittest.TestCase):
         self.assertEqual(snap["history"][0]["text"], "prices of houses in Gulshan")
         self.assertTrue(snap["memory"])
         self.assertIn("Welcome back", snap["welcome"]["text"])
-        self.assertNotIn(",", snap["welcome"]["text"])  # anonymous: never a name
+        self.assertIn("Sara", snap["welcome"]["text"])  # registered: greeted by first name (anonymous visitors get no chat session at all, see below)
 
     def test_start_over_clears_stored_conversation(self):
         allow(self.cl)
@@ -275,19 +278,25 @@ class ChatContinuityTests(unittest.TestCase):
         history = self.cl.get("/api/v1/chat/session").get_json()["history"]
         self.assertEqual([m["text"] for m in history if m["role"] == "user"], ["hello"])
 
-    def test_signed_in_visitor_is_greeted_by_first_name_and_anonymous_by_last_viewed(self):
+    def test_signed_in_visitor_is_greeted_by_first_name_and_the_last_viewed_chip(self):
         allow(self.cl)
-        self.cl.signup(pw=PW)
         self.chat("hello there")
         self.assertIn("Welcome back, Sara", self.cl.get("/api/v1/chat/session").get_json()["welcome"]["text"])
+        pid = self.cl.app.extensions["kpt"].chat_service().store.df.property_id.iloc[0]
+        self.cl.c.set_cookie("kpt_prefs", json.dumps({"recent": [pid]}), domain="localhost")
+        w = self.cl.get("/api/v1/chat/session").get_json()["welcome"]
+        self.assertTrue(w["text"].startswith("Welcome back"))
+        self.assertIn("Continue with", w["chips"][0]["label"])
+
+    def test_anonymous_visitor_gets_no_chat_session_greeting_or_cookie(self):
+        """What used to be the anonymous welcome (no name, last-viewed chip) is now simply refused: 401, no data, no cookie."""
         anon = Client()
         allow(anon)
-        anon.c.post("/api/v1/chat", json={"message": "hello"}, base_url=BASE)
-        pid = anon.app.extensions["kpt"].chat_service().store.df.property_id.iloc[0]
-        anon.c.set_cookie("kpt_prefs", json.dumps({"recent": [pid]}), domain="localhost")
-        w = anon.get("/api/v1/chat/session").get_json()["welcome"]
-        self.assertEqual(w["text"].split("!")[0], "Welcome back")
-        self.assertIn("Continue with", w["chips"][0]["label"])
+        anon.c.set_cookie("kpt_prefs", json.dumps({"recent": ["DEMO-KPT-1648"]}), domain="localhost")
+        for r in (anon.get("/api/v1/chat/session"), anon.c.post("/api/v1/chat", json={"message": "hello"}, base_url=BASE)):
+            self.assertEqual((r.status_code, r.get_json()["code"]), (401, "auth_required"))
+            self.assertNotIn("welcome", r.get_json())
+            self.assertFalse([h for h in set_cookie_headers(r) if "kpt_chat" in h])
 
     def test_tampered_prefs_cookie_is_ignored(self):
         allow(self.cl)
@@ -302,6 +311,8 @@ class ChatContinuityTests(unittest.TestCase):
         r = self.cl.c.post("/api/chat", json={"message": "hello", "session_id": "embed-123"}, base_url=BASE)
         self.assertEqual(r.status_code, 200)
         self.assertIn("reply", r.get_json())
+        anon = Client().c.post("/api/chat", json={"message": "hello", "session_id": "embed-123"}, base_url=BASE)
+        self.assertEqual((anon.status_code, anon.get_json()["code"]), (401, "auth_required"))
 
 
 class CookieInventoryTests(unittest.TestCase):

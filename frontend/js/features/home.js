@@ -1,10 +1,12 @@
 /* features/home.js — Home screen: featured properties, area chips, search/filter/sort, property cards. */
 import { escapeHtml } from '../core/html.js';
-import { AREAS, PROPERTIES } from '../data/properties.js';
+import { AREAS, DEMO_PROPERTY_DISPLAY_STATUS, PROPERTIES } from '../data/properties.js';
 import { renderFeatured } from './featured.js';
 import { loadHomeFilters, saveHomeFilters } from './homePrefs.js';
-import { overallStatus } from '../domain/propertyStatus.js';
 import { state } from '../state/store.js';
+import { isAccountUser, loadSessionUser } from '../services/sessionUser.js';
+import { showLoginRequired } from './loginPrompt.js';
+import { toggleFavorite } from './favorites.js';
 
 export function scrollToGrid(){ setTimeout(()=>{ const g=document.getElementById('grid'); if(g) g.scrollIntoView({behavior:'smooth'}); }, 60); }
 
@@ -94,17 +96,18 @@ export function renderList(){
   document.getElementById('grid').innerHTML = list.map(p=>propCard(p)).join('') || `<div class="empty">No properties match these filters.</div>`;
 }
 
-/** Start with the area / type / sort the visitor chose last time (Preferences consent permitting). */
-export function initHomeFilters(){ loadHomeFilters(state, AREAS, [...new Set(PROPERTIES.map(p=>p.type))]); }
+/** Registered users and admins get the area / type / sort stored on their own account (G5.3c), applied once the session has resolved.
+ *  Guests, signed-out and unresolved sessions get nothing. Resolves true when something was restored, so the caller can re-render. */
+export function initHomeFilters(){ return loadHomeFilters(state, AREAS, [...new Set(PROPERTIES.map(p=>p.type))]); }
 
 export function setArea(a){ state.areaFilter=a; saveHomeFilters(state); renderList(); document.querySelectorAll('.area-chip').forEach(c=>c.classList.remove('active')); if(a) event.target.classList.add('active'); }
 
 function propCard(p){
-  const ov = overallStatus(p);
-  const vtext = ov==='verified'?'✓ Verification Available':(ov==='unchecked'?'Not Verified':'⚠ Review Required');
+  const ov = DEMO_PROPERTY_DISPLAY_STATUS;
+  const vtext = '✓ Verified';
   return `<div class="pcard">
     <div class="thumb bg-photo bg-grad-card" data-onclick="nav('detail','${p.id}')" data-bg="${p.image}">
-      <button class="fav${state.saved.has(p.id)?' saved':''}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save property" data-onclick="stopPropagation();toggleSave('${p.id}')">${state.saved.has(p.id)?'♥':'♡'}</button>
+      <button class="fav${state.saved.has(p.id)?' saved':''}" data-favorite-id="${p.id}" aria-pressed="${state.saved.has(p.id)}" aria-label="${state.saved.has(p.id)?'Remove from saved properties':'Save property'}" data-onclick="stopPropagation();toggleSave('${p.id}')"><span class="favorite-heart" data-favorite-heart aria-hidden="true">${state.saved.has(p.id)?'♥':'♡'}</span></button>
       <span class="type-tag">${p.type}</span>
     </div>
     <div class="body">
@@ -118,7 +121,16 @@ function propCard(p){
   </div>`;
 }
 
-export function toggleSave(id){ state.saved.has(id)?state.saved.delete(id):state.saved.add(id); renderList(); }
+/** G5.1: saving or removing a favorite needs an account. All three controls (home heart, detail heart, detail Save Property) call this,
+ *  so the check lives here. It awaits the existing GET /auth/me; a guest, a signed-out visitor or a session that cannot be resolved gets
+ *  the existing login dialog (returning to the current page) and state.saved is not touched. An authorised change is stored on the
+ *  account by features/favorites.js (G5.2). Resolves true when the favorite was toggled. */
+export async function toggleSave(id){
+  let user = null;
+  try { user = await loadSessionUser(); } catch { user = null; }
+  if(!isAccountUser(user)){ showLoginRequired({ feature: 'Saved properties' }); return false; }
+  return toggleFavorite(id);   // G5.2: the change is stored on the account first; the controls update only when the server confirmed it
+}
 
 /* Filter inputs (replace former inline `state.x=this.value` handlers). */
 export function setSearch(value){ state.search = value; renderList(); }

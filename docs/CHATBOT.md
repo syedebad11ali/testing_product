@@ -40,6 +40,9 @@ flowchart LR
 `reason` is `null` unless an AI engine could not answer: `no_key` (none configured), or `auth`, `quota`, `timeout`, `model`, `busy`, `network`, `error` (the last failure). Additive; older clients ignore it.
 `reply/source/from_data` are unchanged, so `/api/chat` and the embeddable widget keep working.
 
+## Embeddable widget and sign-in (G2/G4)
+`/api/chat` needs a registered user or admin (anonymous 401 `auth_required`, guest 403 `guest_not_allowed`, pending password change 403 `password_change_required`). The widget (`/static/chatbot.js`, demo at `/chatbot-demo`) shows a fixed "Login required" card for the first two (a "Password change required" card linking to `/login?change=1` for the third), never the backend text, never retrying. Its link is built from the origin the script was loaded from plus `/login?next=%2Fchatbot-demo`, not from `apiUrl`. **Limitation (owner decision):** a widget embedded on another website sends no KPT cookie (SameSite=Lax, no credentialed CORS), so it always shows this card, even for a user logged in on KPT; chat works only on KPT's own site. Other errors (403 forbidden/csrf_failed, 429, 5xx, network, timeout) keep the old error row with Try again.
+
 ## Deep links
 `/#/plot|house|apartment|portion|commercial/<Property ID>` opens `features/listing.js` (works on refresh and when shared). The route is parsed by `routeFromHash` in `app/router.js`; the client accepts only URLs matching `SAFE_URL` in `features/chat.js`.
 

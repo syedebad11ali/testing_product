@@ -80,13 +80,22 @@ def get_prefs():
 @bp.put("/auth/prefs")
 @login_required()
 def put_prefs():
-    """Store (merged with what is already saved) the sanitised preference values; returns the result."""
+    """Store (merged with what is already saved) the sanitised preference values; returns the result.
+
+    Lists are unioned, so ``prefs`` can only add. Optional ``remove`` = ``{"saved": ["ID", ...]}`` takes ids out (G5.2: un-saving a
+    favorite) and ``"fields": ["area", "ptype", "sort"]`` clears those home filters (G5.3c). An update that would push an already saved id out because the 30-item limit is full is refused with 409 ``saved_limit``
+    and nothing is written. The account is always the one in the session: no user id is read from the request."""
     kpt, sess = current_app.extensions["kpt"], current_session()
-    incoming = _body().get("prefs")
+    body = _body()
+    incoming, remove = body.get("prefs"), body.get("remove")
     if not isinstance(incoming, dict):
         raise ApiError("'prefs' must be an object.", 400, "invalid_prefs")
-    merged = prefs_mod.merge(kpt.prefs().get(sess["user_id"]), incoming)
-    return jsonify(prefs=kpt.prefs().set(sess["user_id"], merged))
+    if remove is not None and not isinstance(remove, dict):
+        raise ApiError("'remove' must be an object.", 400, "invalid_prefs")
+    result, evicted = prefs_mod.apply_update(kpt.prefs().get(sess["user_id"]), incoming, remove)
+    if evicted:
+        raise ApiError("You can save up to 30 properties. Remove one first.", 409, "saved_limit")
+    return jsonify(prefs=kpt.prefs().set(sess["user_id"], result))
 
 
 @bp.post("/auth/forget-device")

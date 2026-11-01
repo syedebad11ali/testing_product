@@ -14,6 +14,21 @@
   var cssHref = script && script.src ? script.src.replace(/chatbot\.js.*$/, "chatbot.css") : "/static/chatbot.css";
   var link = document.createElement("link"); link.rel = "stylesheet"; link.href = cssHref; document.head.appendChild(link);
 
+  /* Where "Log in / Sign up" goes: ALWAYS the KPT application origin, i.e. the host this script was served from (script.src), never
+     cfg.apiUrl or anything else a page can override. On the first-party site that is the same origin; with no usable script URL it is a
+     relative link. Under the chosen security model an embedded widget on another site never carries the KPT session (SameSite=Lax cookies,
+     no credentialed CORS), so there it can only send the visitor to KPT's own site to use the assistant. */
+  var kptOrigin = /^https?:\/\//.test(origin) ? origin : "";
+  var thirdParty = !!kptOrigin && kptOrigin !== window.location.origin;
+  var LOGIN_NEXT = "/chatbot-demo";   // a fixed first-party page that hosts this widget; no user input is ever placed in the link
+  var LOGIN_HREF = kptOrigin + "/login?next=" + encodeURIComponent(LOGIN_NEXT);
+  var PASSWORD_HREF = kptOrigin + "/login?change=1";   // the existing mandatory password-change screen
+  var AUTH = {
+    login: { title: "Login required", text: "Create an account or log in to use this feature.", action: "Log in / Sign up", href: LOGIN_HREF },
+    password: { title: "Password change required", text: "You must change your password before continuing.", action: "Change password", href: PASSWORD_HREF }
+  };
+  var THIRD_PARTY_NOTE = "Being logged in on this website does not sign in this embedded assistant. Log in on the Karachi Property Trust website to chat with the assistant there.";
+
   var KEY = "pc-state", st = load();
   function load() { try { return JSON.parse(sessionStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
   function save() { try { sessionStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -63,6 +78,38 @@
   }
   function toBottom() { scroller.scrollTop = scroller.scrollHeight; }
 
+  /* Authorization failures are shown as one fixed card (never the backend's wording, never an assistant bubble) and the composer is
+     locked, so nothing is retried or resent until the visitor starts a new chat. */
+  var locked = null, authCard = null;
+  function showAuthCard(kind) {
+    if (locked) return;                        // never a second prompt
+    locked = kind; var a = AUTH[kind];
+    authCard = document.createElement("div"); authCard.className = "pc-login"; authCard.setAttribute("role", "alert");
+    var h = document.createElement("h3"); h.className = "pc-login-title"; h.textContent = a.title;
+    var p = document.createElement("p"); p.className = "pc-login-text"; p.textContent = a.text;
+    var l = document.createElement("a"); l.className = "pc-login-btn"; l.href = a.href; l.textContent = a.action;
+    if (thirdParty) { l.target = "_blank"; l.rel = "noopener noreferrer"; }
+    authCard.appendChild(h); authCard.appendChild(p);
+    if (thirdParty) { var n = document.createElement("p"); n.className = "pc-login-note"; n.textContent = THIRD_PARTY_NOTE; authCard.appendChild(n); }
+    authCard.appendChild(l);
+    msgs.appendChild(authCard); chips.innerHTML = ""; toBottom();
+    input.disabled = true; input.placeholder = a.title; syncSend();
+  }
+  function clearAuthLock() {
+    locked = null; if (authCard) { authCard.remove(); authCard = null; }
+    input.disabled = false; input.placeholder = "Type your message...";
+  }
+  /* Only exactly these two answers mean "not allowed to chat": 401 auth_required and 403 guest_not_allowed (login), and 403
+     password_change_required (password). Every other status/code, including other 403s, keeps the ordinary error handling. */
+  function authKind(status, d) {
+    var code = d && d.code;
+    if (status === 401 && code === "auth_required") return "login";
+    if (status === 403 && code === "guest_not_allowed") return "login";
+    if (status === 403 && code === "password_change_required") return "password";
+    return null;
+  }
+  function AuthError(kind) { this.kind = kind; }
+
   function add(role, text, meta, retryText) {
     var row = document.createElement("div"); row.className = "pc-row " + (role === "error" ? "bot err" : role);
     var b = document.createElement("div"); b.className = "pc-bubble";
@@ -106,9 +153,10 @@
   }
 
   function ask(text, isRetry) {
-    text = text.trim(); if (!text || busy) return;
+    text = text.trim(); if (!text || busy || locked) return;
     busy = true; send.disabled = true;
-    if (!isRetry) { st.msgs.push({ role: "user", text: text }); add("user", text); }
+    var userRow = null;
+    if (!isRetry) { st.msgs.push({ role: "user", text: text }); userRow = add("user", text); }
     chips.innerHTML = ""; save();
     var t = document.createElement("div"); t.className = "pc-row bot";
     t.innerHTML = '<div class="pc-bubble pc-typing" aria-label="Assistant is typing"><i></i><i></i><i></i></div>';
@@ -120,6 +168,8 @@
       .then(function (r) {
         return r.text().then(function (raw) {
           var d = {}; try { d = raw ? JSON.parse(raw) : {}; } catch (e) {}
+          var kind = !r.ok ? authKind(r.status, d) : null;
+          if (kind) throw new AuthError(kind);
           if (!r.ok) throw new Error(d.error || "Server error (" + r.status + "). Please try again.");
           if (!d.reply) throw new Error("The server sent an empty reply. Please try again.");
           return d;
@@ -128,6 +178,11 @@
       .then(function (d) { t.remove(); setFoot(d); var meta = metaFor(d); st.msgs.push({ role: "bot", text: d.reply, meta: meta }); add("bot", d.reply, meta); })
       .catch(function (e) {
         t.remove();
+        if (e instanceof AuthError) {
+          // the rejected message was never answered: drop it (not kept, not resent) and show the one fixed prompt
+          if (userRow) { userRow.remove(); var i = st.msgs.lastIndexOf(st.msgs.filter(function (m) { return m.role === "user" && m.text === text; }).pop()); if (i >= 0) st.msgs.splice(i, 1); }
+          showAuthCard(e.kind); return;
+        }
         var msg = (e && e.name === "AbortError") ? "The assistant took too long to respond. Please try again."
           : (e && e.message && e.message !== "Failed to fetch") ? e.message
           : "I couldn't reach the server. Check your connection and try again.";
@@ -136,7 +191,7 @@
       .then(function () { clearTimeout(timer); busy = false; syncSend(); save(); if (isOpen()) input.focus(); });
   }
 
-  function syncSend() { var ok = input.value.trim().length > 0 && !busy; send.disabled = !ok; send.classList.toggle("ready", ok); }
+  function syncSend() { var ok = input.value.trim().length > 0 && !busy && !locked; send.disabled = !ok; send.classList.toggle("ready", ok); }
   function isOpen() { return root.classList.contains("pc-open"); }
   function setOpen(v) {
     root.classList.toggle("pc-open", v); launcher.setAttribute("aria-label", v ? "Close chat" : "Open chat");
@@ -145,7 +200,7 @@
 
   launcher.onclick = function () { setOpen(!isOpen()); };
   root.querySelector('[data-a="close"]').onclick = function () { setOpen(false); launcher.focus(); };
-  root.querySelector('[data-a="reset"]').onclick = function () { st.sid = newId(); st.msgs = []; save(); render(); };
+  root.querySelector('[data-a="reset"]').onclick = function () { clearAuthLock(); st.sid = newId(); st.msgs = []; save(); render(); };
   input.addEventListener("input", syncSend);
   form.addEventListener("submit", function (e) { e.preventDefault(); var v = input.value; input.value = ""; syncSend(); ask(v); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen()) setOpen(false); });

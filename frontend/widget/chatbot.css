@@ -85,3 +85,12 @@
   .pc-launcher{right:14px;bottom:14px}
 }
 @media (prefers-reduced-motion:reduce){.pc-root *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* Login-required card (shown for 401 / guest 403 / forced password change; see chatbot.js showAuthCard) */
+.pc-login{margin:10px 14px;padding:16px;border-radius:16px;background:var(--chip);color:#10233f;text-align:center}
+.pc-login-title{margin:0 0 6px;font-size:16px;line-height:1.3}
+.pc-login-text{margin:0;font-size:14px;line-height:1.45}
+.pc-login-note{margin:10px 0 0;font-size:12.5px;line-height:1.4;opacity:.8}
+.pc-login-btn{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;margin-top:12px;padding:10px 20px;border-radius:999px;background:var(--blue);color:#fff;font:inherit;font-weight:700;font-size:14px;text-decoration:none}
+.pc-login-btn:focus-visible{outline:3px solid #10233f;outline-offset:3px}
+.pc-input:disabled{cursor:not-allowed;opacity:.7}

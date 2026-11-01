@@ -18,6 +18,7 @@ export const SAMPLES_URL = 'assets/samples/';
 /* Browser storage keys (UI preferences live in the kpt_prefs cookie, see core/cookies.js). */
 export const STORAGE_KEYS = {
   docHistory: 'kpt_doc_history',
+  favoriteProperties: 'kpt_favorite_properties',   // LEGACY (pre-G5.2 global favorites): only ever deleted, never read
   chat: 'kpt-property-assistant',
   bannerClosedAt: 'lastBannerClosedAt',
 };

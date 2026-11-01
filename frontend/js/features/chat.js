@@ -1,8 +1,30 @@
 /* features/chat.js — Property Assistant chat panel (UI); network calls live in services/chatApi.js. */
 import { CHAT_API_URL, CHAT_STARTERS } from '../config.js';
 import { render, routeFromHash } from '../app/router.js';
-import { fetchChatSession, requestChatReply, sendFeedback } from '../services/chatApi.js';
+import { ChatAuthError, fetchChatSession, requestChatReply, sendFeedback } from '../services/chatApi.js';
 import { chatRuntime, chatState, saveChatState } from '../state/store.js';
+import { showLoginRequired } from './loginPrompt.js';
+import { isAccountUser, loadSessionUser, resetSessionUser } from '../services/sessionUser.js';
+
+/* G4a2: authentication errors from /chat, /chat/session and /chat/feedback (the session expired or became invalid while the panel was
+ * in use). 401 auth_required and 403 guest_not_allowed -> the shared login dialog; 403 password_change_required -> the existing forced
+ * password-change page (backend/web.py and api/auth.py send users there too). Anything else is not handled here. */
+export const PASSWORD_CHANGE_URL = '/login?change=1';
+let authEpoch = 0;        // bumped on every rejection; an operation that started before the bump must not touch the UI or the history
+let leaving = false;      // one navigation to the password-change page, however many pending requests fail together
+
+/** @returns {boolean} true when `error` was an authentication outcome and has been handled (the caller then shows nothing else) */
+function handleAuthError(error){
+  if (!(error instanceof ChatAuthError)) return false;
+  authEpoch += 1;
+  if (error.kind === 'password_change') {
+    if (!leaving) { leaving = true; globalThis.location.assign(PASSWORD_CHANGE_URL); }
+  } else {
+    resetSessionUser();   // forget only the cached /auth/me answer so the next launch re-checks it; the server session itself is not touched
+    showLoginRequired({ feature: 'Property Assistant' });   // an open dialog is reused: never two
+  }
+  return true;
+}
 
 /* Only these link shapes may become an href: server-built listing deep links, site pages, WhatsApp, mailto. */
 const SAFE_URL = /^(\/#\/(?:plot|house|apartment|portion|commercial|property)\/DEMO-KPT-\d+|\/#verify-document|\/#owner-verification|\/login|https:\/\/wa\.me\/\d+\?text=\S*|mailto:\S+)$/;
@@ -15,7 +37,7 @@ function link(className, url, onInternal){
   if (url.startsWith('/#')) a.addEventListener('click', event=>{
     event.preventDefault();
     history.pushState(null, '', url);
-    if (routeFromHash(url.slice(1))) render();
+    routeFromHash(url.slice(1)).then((applied) => { if (applied) render(); });
     closeChat();
   });
   return a;
@@ -64,7 +86,7 @@ function renderExtras(row, extras){
     const fb = document.createElement('div'); fb.className = 'chat-feedback';
     [['up', '👍', 'Helpful'], ['down', '👎', 'Not helpful']].forEach(([rating, icon, label])=>{
       const b = document.createElement('button'); b.type = 'button'; b.textContent = icon; b.setAttribute('aria-label', label); b.setAttribute('aria-pressed', 'false');
-      b.addEventListener('click', ()=>{ fb.querySelectorAll('button').forEach(x=>{ x.disabled = true; }); b.setAttribute('aria-pressed', 'true'); sendFeedback(extras.messageId, rating); });
+      b.addEventListener('click', ()=>{ fb.querySelectorAll('button').forEach(x=>{ x.disabled = true; }); b.setAttribute('aria-pressed', 'true'); sendFeedback(extras.messageId, rating).catch(error=>{ if (handleAuthError(error)) { fb.querySelectorAll('button').forEach(x=>{ x.disabled = false; }); b.setAttribute('aria-pressed', 'false'); } }); });
       fb.appendChild(b);
     });
     row.appendChild(fb);
@@ -100,11 +122,13 @@ function appendChatMessage(role, text, meta, extras = {}){
 /** Start over: new anonymous session id (the server forgets the old memory) and a clean transcript. */
 export async function resetChat(){
   if (chatState.continuity) {   // the server keeps this conversation: ask it to clear it and send a fresh greeting
+    const epoch = authEpoch;
     try {
       const data = await requestChatReply(chatState.sessionId, 'hello', { reset: true, continuity: true });
+      if (epoch !== authEpoch) return;   // access was rejected meanwhile: leave the transcript as it is
       chatState.messages = [{ role: 'assistant', text: data.reply, extras: { chips: data.chips.slice(0, 5) } }];
       chatState.lastSpecialist = ''; saveChatState(); renderChat(); return;
-    } catch (_) { /* fall through to a local reset */ }
+    } catch (error) { if (handleAuthError(error) || epoch !== authEpoch) return; /* history is kept when access is rejected; any other failure falls through to a local reset */ }
   }
   chatState.sessionId = globalThis.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
   chatState.messages = []; chatState.lastSpecialist = '';
@@ -169,8 +193,10 @@ async function sendChatMessage(text){
   thread.appendChild(typing);
   const send = document.querySelector('.assistant-send');
   if (send) send.disabled = true;
+  const epoch = authEpoch;
   try {
     const data = await requestChatReply(chatState.sessionId, text, { continuity: chatState.continuity === true });
+    if (epoch !== authEpoch) { typing.remove(); return; }   // access was rejected while this was pending: no reply is inserted
     chatState.continuity = data.continuity === true;
     const meta = data.from_data ? 'From property data' : (data.source === 'greeting' ? '' : 'General knowledge');
     const showSpecialist = data.specialist && data.specialist !== 'Property Assistant' && data.specialist !== chatState.lastSpecialist ? data.specialist : '';
@@ -182,6 +208,7 @@ async function sendChatMessage(text){
     appendChatMessage('assistant', data.reply, meta, { ...extras, isLast: true });
   } catch (error) {
     typing.remove();
+    if (handleAuthError(error) || epoch !== authEpoch) return;   // login / password-change flow instead of a message; stale failures stay silent
     appendChatMessage('error', error.message || 'Could not reach Property Assistance. Check that the chatbot server is running and try again.');
   } finally {
     chatRuntime.busy = false;
@@ -195,7 +222,10 @@ async function sendChatMessage(text){
 async function restoreChatSession(){
   if (chatRuntime.restored) return;
   chatRuntime.restored = true;
-  const data = await fetchChatSession();
+  const epoch = authEpoch;
+  let data;
+  try { data = await fetchChatSession(); } catch (error) { if (handleAuthError(error)) chatRuntime.restored = false; return; }   // restore again on a later, user-initiated open
+  if (epoch !== authEpoch) { chatRuntime.restored = false; return; }   // access was rejected while this was pending: do not touch the transcript
   if (!data) return;
   chatState.continuity = true;
   if (chatState.messages.length) { saveChatState(); return; }   // this tab already shows its own transcript
@@ -206,6 +236,19 @@ async function restoreChatSession(){
   chatState.messages = past; saveChatState(); renderChat();
 }
 
-export function openChat(){ if (!chatRuntime.initialized) renderChat(); restoreChatSession(); document.getElementById('chatPanel').classList.add('open'); document.getElementById('overlayBg').classList.add('show'); }
+/** G4a1: the Property Assistant is an account feature. Every launch button (floating button, drawer entry, "Learn how verification works",
+ *  "Ask the assistant", "Contact Seller", "Share") reaches the panel through openChat(), so the guard lives here. It awaits the one existing
+ *  GET /auth/me; only a loaded registered user or admin opens the panel. A guest, a signed-out visitor, or a session that cannot be resolved
+ *  gets the existing login dialog (an open dialog is reused, so never a second one): no panel, no chat API request, no history change, and
+ *  the guest session is left alone. Display only: the server still answers 401/403 on /chat. Resolves true when the panel was opened. */
+export async function openChat(){
+  let user = null;
+  try { user = await loadSessionUser(); } catch { user = null; }
+  if (!isAccountUser(user)) { showLoginRequired({ feature: 'Property Assistant' }); return false; }
+  openChatPanel();
+  return true;
+}
+
+function openChatPanel(){ leaving = false; if (!chatRuntime.initialized) renderChat(); restoreChatSession(); document.getElementById('chatPanel').classList.add('open'); document.getElementById('overlayBg').classList.add('show'); }
 
 export function closeChat(){ document.getElementById('chatPanel').classList.remove('open'); document.getElementById('overlayBg').classList.remove('show'); }

@@ -41,7 +41,7 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - name: Playwright flows (local server, throwaway database)
         run: |
-          for t in csp_test messaging_test cookies_test login_test smoke listings_test listing_lifecycle_test prefs_test admin_totp_test a11y_basics_test camera_upload_test login_busy_test property_images_test featured_test creators_test signup_single_click_test developer_login_test guest_entry_test guest_entry_failures_test; do
+          for t in csp_test messaging_test cookies_test login_test smoke listings_test listing_lifecycle_test prefs_test admin_totp_test a11y_basics_test camera_upload_test guest_owner_privacy_test login_busy_test google_button_responsive_test property_images_test featured_test creators_test signup_single_click_test developer_login_test guest_entry_test guest_entry_failures_test g3_integration_test g4_chatbot_test widget_auth_test g4_widget_test g5_account_data_test; do
             echo "== $t"; python tests/browser/$t.py || exit 1
           done
   audit:

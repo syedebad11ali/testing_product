@@ -126,3 +126,6 @@ audit failure aborts the action. A banned user who logs in with the right passwo
 (the reason `banned` is recorded in the login events).
 
 **Cookie consent timing (T5a):** `/login`, `/signup`, `/developer-login` and `/nice-try` do not load the consent banner. It appears on the first page after password login, sign-up, Google sign-in or Continue as guest, only when no current choice is recorded; a recorded choice is not asked again until the policy version changes. Consent is not authentication and grants nothing. On a first visit "Remember me" finds no Preferences consent, so no remember token is issued and the response carries `remember_note`. Google is covered with a fake verifier only (`tests/browser/cookies_test.py`, `tests/backend/test_auth.py`); live Google sign-in is unverified. See `docs/COOKIES.md`.
+
+## Embedded chatbot widget (G4b)
+No cross-origin session sharing: cookies stay `SameSite=Lax`, CORS sends no `Access-Control-Allow-Credentials`, and there is no widget token. A widget on a third-party site is therefore always unauthenticated and shows the login card linking to `/login?next=%2Fchatbot-demo` on the KPT origin (script origin). Verified in `tests/browser/g4_widget_test.py` (a logged-in browser still gets the card on a cross-origin embed; the `/api/chat` request carries no cookie).

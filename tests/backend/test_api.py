@@ -1,6 +1,7 @@
 """HTTP contract tests (Flask test client). Gemini is never called: no API key is configured."""
 import dataclasses
 import unittest
+import uuid
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -14,10 +15,21 @@ def make_client(**overrides):
     return create_app(settings).test_client()
 
 
+def sign_in(client, name="Chat Tester"):
+    """Register a new account on a raw test client and keep its session cookie (chat is an account feature since G2).
+    The e-mail is unique per call because clients from ``make_client`` share one database file."""
+    token = client.get("/api/v1/auth/csrf").get_json()["csrf_token"]
+    r = client.post("/api/v1/auth/signup", json={"name": name, "email": f"chat-{uuid.uuid4().hex[:12]}@example.com", "password": "correct-horse-battery"},
+                    headers={"X-CSRF-Token": token, "Origin": "http://localhost"})
+    assert r.status_code == 201, r.get_json()
+    return client
+
+
 class ApiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = make_client(rate_limit_per_min=1000)
+        cls.client = make_client(rate_limit_per_min=1000)               # anonymous: route/static tests
+        cls.chat_client = sign_in(make_client(rate_limit_per_min=1000))  # registered: chat tests
 
     def test_health_on_versioned_and_legacy_paths(self):
         for path in ("/api/v1/health", "/api/health"):
@@ -43,7 +55,7 @@ class ApiTests(unittest.TestCase):
 
     def test_chat_answers_from_records_on_both_paths(self):
         for path in ("/api/v1/chat", "/api/chat"):
-            r = self.client.post(path, json={"message": "hello"})
+            r = self.chat_client.post(path, json={"message": "hello"})
             self.assertEqual(r.status_code, 200, path)
             self.assertTrue(r.get_json()["reply"])
 
@@ -51,13 +63,13 @@ class ApiTests(unittest.TestCase):
         cases = [({"message": ""}, "empty_message"), ({"message": "x" * 1001}, "message_too_long"),
                  ({"message": 5}, "invalid_message"), ({}, "empty_message")]
         for payload, code in cases:
-            r = self.client.post("/api/v1/chat", json=payload)
+            r = self.chat_client.post("/api/v1/chat", json=payload)
             self.assertEqual(r.status_code, 400)
             self.assertEqual(r.get_json()["code"], code)
             self.assertIn("error", r.get_json())
 
     def test_non_json_body_is_a_400_not_a_crash(self):
-        r = self.client.post("/api/v1/chat", data="not json", content_type="text/plain")
+        r = self.chat_client.post("/api/v1/chat", data="not json", content_type="text/plain")
         self.assertEqual((r.status_code, r.get_json()["code"]), (400, "invalid_json"))
 
     def test_unknown_api_route_returns_json_404(self):
@@ -87,7 +99,7 @@ class ApiTests(unittest.TestCase):
 
 class RateLimitTests(unittest.TestCase):
     def test_limit_returns_429_with_code(self):
-        client = make_client(rate_limit_per_min=3)
+        client = sign_in(make_client(rate_limit_per_min=3))
         codes = [client.post("/api/v1/chat", json={"message": "hi"}).status_code for _ in range(5)]
         self.assertEqual(codes[:3], [200, 200, 200])
         self.assertEqual(codes[3:], [429, 429])
@@ -113,7 +125,7 @@ class FailureHandlingTests(unittest.TestCase):
                 raise RuntimeError("secret /path/to/model.joblib failure")
 
         app.extensions["kpt"]._service = Boom()
-        r = app.test_client().post("/api/v1/chat", json={"message": "hi"})
+        r = sign_in(app.test_client()).post("/api/v1/chat", json={"message": "hi"})
         body = r.get_json()
         self.assertEqual((r.status_code, body["code"]), (500, "internal_error"))
         self.assertNotIn("secret", r.get_data(as_text=True))
@@ -171,7 +183,7 @@ class NoOwnerExposureTests(unittest.TestCase):
         blobs = [p.read_text(encoding="utf-8", errors="ignore") for d in ("public/assets/Dataset", "frontend") for p in (root / d).rglob("*") if p.suffix in {".csv", ".js", ".html"}]
         for name in names:
             self.assertFalse(any(name in b for b in blobs), name)
-        client = make_client(rate_limit_per_min=1000)
+        client = sign_in(make_client(rate_limit_per_min=1000))
         reply = client.post("/api/v1/chat", json={"message": "who owns DEMO-KPT-1648? previous owner name?"}).get_data(as_text=True)
         for name in ("Usman Sial", "Maimoona Gilani"):
             self.assertNotIn(name, reply)
@@ -204,7 +216,7 @@ class SecurityTests(unittest.TestCase):
             self.assertNotRegex(page.read_text(encoding="utf-8"), r"<script(?![^>]*\bsrc=)[^>]*>\s*\S", page.name)
 
     def test_429_has_retry_after_and_request_id(self):
-        client = make_client(rate_limit_per_min=1)
+        client = sign_in(make_client(rate_limit_per_min=1))
         client.post("/api/v1/chat", json={"message": "hi"})
         r = client.post("/api/v1/chat", json={"message": "hi"})
         self.assertEqual(r.status_code, 429)
@@ -212,11 +224,11 @@ class SecurityTests(unittest.TestCase):
         self.assertTrue(r.get_json()["request_id"])
 
     def test_client_ip_comes_from_forwarded_header_only_when_trusted(self):
-        trusted = make_client(rate_limit_per_min=1, trusted_proxy_hops=1)
+        trusted = sign_in(make_client(rate_limit_per_min=1, trusted_proxy_hops=1))
         codes = [trusted.post("/api/v1/chat", json={"message": "hi"}, headers={"X-Forwarded-For": ip}).status_code
                  for ip in ("1.1.1.1", "2.2.2.2", "1.1.1.1")]
         self.assertEqual(codes, [200, 200, 429])
-        spoof = make_client(rate_limit_per_min=1)  # no trusted proxy: header is ignored
+        spoof = sign_in(make_client(rate_limit_per_min=1))  # no trusted proxy: header is ignored
         codes = [spoof.post("/api/v1/chat", json={"message": "hi"}, headers={"X-Forwarded-For": ip}).status_code
                  for ip in ("1.1.1.1", "2.2.2.2")]
         self.assertEqual(codes, [200, 429])

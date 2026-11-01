@@ -96,7 +96,7 @@ test('approved area end to end (real app function and the app\'s own record set)
 /* ---- 2. full CNICs never appear in message text -------------------------------------------------------------------- */
 
 test('maskCnic keeps only the first five and last two digits', () => {
-  assert.equal(maskCnic('4210112345671'), '42101-******7-1');
+  assert.equal(maskCnic('0000000001010'), '00000-******1-0');
 });
 
 test('an OCR-uncertain CNIC is shown masked in reasons, checks and limitations (three fixtures that misread it)', () => {
@@ -119,13 +119,13 @@ test('no result text for any fixture, in either lane, contains a full CNIC', () 
 
 test('stored results mask CNICs in reasons and limitations too (it already did for checks)', () => {
   const stored = sanitizeResultForStorage({
-    status: 'unable_to_verify', reasons: ['CNIC read from the image ("42101-1234567-1") differs', 'no CNIC here', 'bare 4210112345671 digits'],
-    limitations: ['quoted 42101-1234567-1 once'], checks: [{ text: 'CNIC 42101-1234567-1' }],
+    status: 'unable_to_verify', reasons: ['CNIC read from the image ("00000-0000101-0") differs', 'no CNIC here', 'bare 0000000001010 digits'],
+    limitations: ['quoted 00000-0000101-0 once'], checks: [{ text: 'CNIC 00000-0000101-0' }],
   });
   for (const k of ['reasons', 'limitations']) assert.doesNotMatch(JSON.stringify(stored[k]), FULL_CNIC, k);
   assert.doesNotMatch(JSON.stringify(stored.checks), FULL_CNIC);
   assert.equal(stored.reasons[1], 'no CNIC here');
-  assert.equal(stored.reasons[0], 'CNIC read from the image ("42101-******7-1") differs');
+  assert.equal(stored.reasons[0], 'CNIC read from the image ("00000-******1-0") differs');
 });
 
 /* ---- 3. the report and the app use one decision path --------------------------------------------------------------- */
@@ -157,7 +157,7 @@ test('verifyAgainstRecords: nothing readable, no matching record, and self-contr
   const none = Extraction.verifyAgainstRecords(Extraction.parseDocumentText('hello world', 'property'), FIXTURE_RECORDS, {});
   assert.deepEqual([none.status, none.earlyExit, none.noMatch, none.matched], ['unable_to_verify', true, false, null]);
 
-  const stranger = 'Owner: Zubair Qureshi\nCNIC: 42101-1234567-1\nPlot Number: 901-Z\n';
+  const stranger = 'Owner: Zubair Qureshi\nCNIC: 00000-0000101-0\nPlot Number: 901-Z\n';
   const noMatch = Extraction.verifyAgainstRecords(Extraction.parseDocumentText(stranger, 'property'), FIXTURE_RECORDS, {});
   assert.deepEqual([noMatch.status, noMatch.earlyExit, noMatch.noMatch], ['not_verified', true, true]);
 

@@ -30,6 +30,14 @@ test('the sample-document folder the verification flow fetches from exists and h
   for (const n of files) assert.ok(statSync(join(dir, n)).size > 1000, `${n} looks empty`);
 });
 
+test('GitHub creator avatar files referenced by the header are present', () => {
+  const html = read('frontend/index.html');
+  for (const name of ['syedebad11ali.jpg', 'ctrl-shift-ali.jpg']) {
+    assert.match(html, new RegExp(`assets/creators/${name}`));
+    assert.ok(statSync(join(ROOT, 'public/assets/creators', name)).size > 1000, `${name} looks empty`);
+  }
+});
+
 test('no secrets or owner-name datasets were brought over with the assets', () => {
   const all = walk(join(ROOT, 'public'));
   assert.deepEqual(all.filter((p) => /(^|[\\/])\.env($|\.)/.test(p) && !p.endsWith('.example')), []);

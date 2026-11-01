@@ -29,3 +29,6 @@ Guest->account transition now implemented and tested (`tests/backend/test_guest_
 
 ## Update (T5/T6a ported into v2)
 v2 is the canonical tree. T5a/T5b and T6a are ported and tested (npm 221/221; backend 329 run, only the `pyotp` import error; 18/18 runnable browser tests). **Next: build/verify the final ZIP**, then the owner's live Google check (T6b, blocked on their OAuth setup). Optional: extend `camera_upload_test` through the document-type chooser.
+
+## Update (Google button responsive fix)
+The Google sign-in button now follows its container width (`googleButtonWidth` + `ResizeObserver` in `frontend/js/auth-page.js`, `.gbox` containment in `login.css`); new `tests/browser/google_button_responsive_test.py` (CI-registered) and `tests/frontend/googleButtonWidth.test.js`. `npm test` 224/224; focused browser tests OK; the full backend suite was not re-run (no backend change; last recorded 329 run, only the `pyotp` import error). Latest package: `karachi-property-trust-google-button-update.zip` (root `kpt/`). Open: **T6b** = owner live Google check (real client id, authorised origin, real phone); TOTP, PostgreSQL and real OCR/PDF remain unverified. See `work.md` section 14.

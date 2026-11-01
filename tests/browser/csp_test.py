@@ -55,10 +55,12 @@ def main() -> int:
             for path, what in (("/login", "login"), ("/signup", "signup"), ("/privacy", "privacy"), ("/nice-try", "nice-try"), ("/chatbot-demo", "chatbot demo"), ("/no-such-page", "404")):
                 pg = visit(anon, path, what)
                 if path == "/chatbot-demo":
+                    # G4b: an anonymous visitor cannot chat; the widget shows the fixed login card (an error row or a bot-styled bubble would NOT pass)
                     pg.click(".pc-launcher"); pg.wait_for_selector(".pc-compose")
                     pg.fill(".pc-compose input, .pc-compose textarea", "average price in DHA"); pg.keyboard.press("Enter")
-                    pg.wait_for_selector(".pc-row.bot", timeout=15000)
-                    check(pg.evaluate("() => window.__csp") == [] and pg.locator(".pc-row.bot").count() >= 1, "chatbot demo: widget opens, answers a question, no violations")
+                    pg.wait_for_selector(".pc-login", timeout=15000)
+                    check(pg.inner_text(".pc-login-title") == "Login required" and pg.locator(".pc-row.err").count() == 0 and pg.evaluate("() => window.__csp") == [],
+                          "chatbot demo (anonymous): login-required card shown, no violations")
                 if path == "/privacy":
                     pg.click("[data-choice=customise]"); check(pg.evaluate("() => window.__csp") == [], "privacy: banner customise opens without violations")
                 if path == "/login":
@@ -76,14 +78,24 @@ def main() -> int:
             for path, what in (("/messages", "messages"), ("/listings", "listings")):
                 pg = visit(user, path, what)
                 if path == "/listings": pg.wait_for_selector("form, #newListing, h1")
+            # G4b: a registered user gets a REAL assistant answer on /chatbot-demo: a non-error bot row with its source line, no login card, no CSP violation
+            pg = visit(user, "/chatbot-demo", "chatbot demo (registered user)")
+            pg.click(".pc-launcher"); pg.wait_for_selector(".pc-compose")
+            pg.fill(".pc-compose input, .pc-compose textarea", "average price in DHA"); pg.keyboard.press("Enter")
+            pg.wait_for_selector(".pc-row.bot:not(.err) .pc-meta", state="attached", timeout=20000)
+            row = pg.locator(".pc-row.bot:not(.err)").last
+            answer, meta = (row.locator(".pc-bubble").text_content() or "").strip(), (row.locator(".pc-meta").text_content() or "").strip()
+            check(len(answer) > 20 and meta != "" and pg.locator(".pc-row.err").count() == 0 and pg.locator(".pc-login").count() == 0 and pg.evaluate("() => window.__csp") == [],
+                  "chatbot demo (registered user): widget opens, shows a real answer with its source line, no error row, no login card, no violations")
             adm = b.new_context(); ap = adm.new_page(); ap.goto(base + "/login")
             check(api(ap, "/api/v1/auth/login", {"identifier": "admin_001", "password": ADMIN_PW}) == 200, "admin logs in")
             pg = visit(adm, "/admin", "admin"); pg.wait_for_selector("#users tbody tr")
             check(pg.evaluate("() => window.__csp") == [], "admin: tables render without violations")
 
             # main app page: strict too, and the migrated (former inline) styles still take effect
-            gctx = b.new_context(); enter_as_guest(gctx.new_page(), base, dismiss=False)   # the app page needs a session since T4
-            hp = visit(gctx, "/", "main app page")
+            # G3: the verify / owner-verification views are account-only (the router shows the login dialog to a guest), so the app-page checks
+            # below that open them run as the registered user; the dialog a guest gets is checked for CSP violations right after.
+            hp = visit(user, "/", "main app page")
             hp.wait_for_selector("[data-onclick=\"nav('detail','p1')\"]")
             hp.click("[data-choice=reject]")
             thumb_bg = hp.evaluate("() => getComputedStyle(document.querySelector('.thumb.bg-photo')).backgroundImage")
@@ -106,6 +118,12 @@ def main() -> int:
             hp.goto(base + "/#verify-document"); hp.wait_for_load_state("networkidle")
             hp.goto(base + "/#owner-verification"); hp.wait_for_load_state("networkidle")
             check(hp.evaluate("() => window.__csp") == [], "main page: verify / owner-verification views, no CSP violations")
+            gctx = b.new_context(); enter_as_guest(gctx.new_page(), base, dismiss=False)   # the app page needs a session since T4
+            gp = visit(gctx, "/", "main app page (guest)")
+            gp.wait_for_selector("[data-onclick=\"nav('detail','p1')\"]"); gp.click("[data-choice=reject]")
+            gp.click("[data-onclick=\"nav('detail','p1')\"]"); gp.click("text=Verify This Property"); gp.wait_for_selector(".login-prompt")
+            check(gp.locator(".progress-fill").count() == 0, "guest: Verify This Property shows the login dialog, not the verify view")
+            check(gp.evaluate("() => window.__csp") == [], "guest: the login-required dialog causes no CSP violations")
             b.close()
         check(console == [], f"no console CSP errors ({console[:2]})")
     finally:

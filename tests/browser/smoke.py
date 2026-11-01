@@ -7,7 +7,7 @@ import os, socket, subprocess, sys, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(Path(__file__).resolve().parent / "support"))
-from session_entry import dismiss_consent, enter_as_guest  # noqa: E402
+from session_entry import dismiss_consent, enter_as_user  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -30,7 +30,7 @@ def main() -> int:
             b = p.chromium.launch(); pg = b.new_page(viewport={"width": 390, "height": 900})
             pg.on("console", lambda m: problems.append(m.text) if m.type == "error" and ("Content Security" in m.text or "[kpt]" in m.text or "Refused" in m.text) else None)
             pg.on("pageerror", lambda e: problems.append(f"pageerror: {e}"))
-            enter_as_guest(pg, base); pg.wait_for_selector("[data-onclick^=\"nav('detail'\"]", timeout=8000)
+            enter_as_user(pg, base); pg.wait_for_selector("[data-onclick^=\"nav('detail'\"]", timeout=8000)
             dismiss_consent(pg)  # cookie banner (bottom of the screen) would cover the controls
             pg.click("#themeToggle"); theme = pg.evaluate("document.documentElement.getAttribute('data-theme')")
             pg.click(".topnav-menu"); assert pg.is_visible(".drawer-item"), "drawer did not open"

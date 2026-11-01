@@ -21,6 +21,7 @@ HINTS = {"intro", "promo", "chat_nudge", "verify_tip", "demo_notice"}
 _TOKEN = re.compile(r"[a-z0-9][a-z0-9 _.-]{0,39}")      # filter codes such as "gulshan e iqbal", "house"
 _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,31}")      # property ids such as DEMO-KPT-8103
 LIST_LIMITS = {"recent": 20, "compare": 4, "saved": 30, "dismissed": 10}
+CLEARABLE_FIELDS = ("area", "ptype", "sort")  # G5.3c: the home filters, the only scalars an update may take out
 MAX_PRICE = 10_000_000_000
 MAX_JSON_BYTES = 3000  # well under the 4 KB cookie limit once URL-encoded
 
@@ -74,6 +75,34 @@ def merge(account: dict, cookie: dict) -> dict:
         merged_list = list(dict.fromkeys([*c.get(key, []), *a.get(key, [])]))
         if merged_list: merged[key] = merged_list
     return sanitize(merged)
+
+
+def apply_update(account: dict, incoming: Any, remove: Any = None) -> tuple[dict, list[str]]:
+    """G5.2: the account's new preferences after a PUT, plus the saved ids the update would silently push out.
+
+    ``incoming`` is merged exactly as before (lists are UNIONED, so on its own it can only add). ``remove`` is an optional
+    ``{"saved": [ids]}`` mapping of list keys to ids to take out of the merged result, which is what makes un-saving possible.
+    G5.3c: ``remove["fields"]`` may also list home-filter keys (``area``, ``ptype``, ``sort``) to clear, because a scalar can only be
+    overwritten, never unset, by the merge (that is how "All areas" is stored). Other keys named there are ignored.
+    The second value lists previously saved ids that are gone from the result although nobody asked to remove them: that is the
+    30-item limit (or the size cap) truncating, and the caller must refuse the update instead of dropping a favorite quietly."""
+    current = sanitize(account)
+    merged = merge(current, incoming)
+    gone: dict[str, set[str]] = {}
+    for key in LIST_LIMITS:
+        wanted = _ids((remove or {}).get(key) if isinstance(remove, dict) else None, 1000)
+        if wanted:
+            gone[key] = set(wanted)
+            kept = [i for i in merged.get(key, []) if i not in gone[key]]
+            if kept: merged[key] = kept
+            else: merged.pop(key, None)
+    fields = (remove or {}).get("fields") if isinstance(remove, dict) else None
+    for key in fields if isinstance(fields, list) else []:
+        if key in CLEARABLE_FIELDS:
+            merged.pop(key, None)
+    final = sanitize(merged)
+    evicted = [i for i in current.get("saved", []) if i not in final.get("saved", []) and i not in gone.get("saved", set())]
+    return final, evicted
 
 
 class PrefsService:

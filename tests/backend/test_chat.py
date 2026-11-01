@@ -5,7 +5,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-from tests.backend.test_api import make_client  # noqa: E402
+from tests.backend.test_api import make_client, sign_in  # noqa: E402
 from backend.services.router import classify  # noqa: E402
 
 OWNER_KEYS = {"owner", "owner_name", "previous_owner", "owner_id"}
@@ -31,7 +31,7 @@ class HelpAndOverviewTests(unittest.TestCase):
     """Answers added from the reference project's offline help/stats; they must be grounded in the store and never use the model."""
 
     def setUp(self):
-        self.c = make_client(rate_limit_per_min=1000)
+        self.c = sign_in(make_client(rate_limit_per_min=1000))   # chat is an account feature (G2)
         self.store = self.c.application.extensions["kpt"].chat_service().store
         self.o = self.store.overview()
 
@@ -81,7 +81,7 @@ class HelpAndOverviewTests(unittest.TestCase):
 
 class ChatBehaviourTests(unittest.TestCase):
     def setUp(self):
-        self.c = make_client(rate_limit_per_min=1000)
+        self.c = sign_in(make_client(rate_limit_per_min=1000))   # chat is an account feature (G2)
 
     def ask(self, message, sid="t", **kw):
         r = self.c.post("/api/v1/chat", json={"message": message, "session_id": sid, **kw})
@@ -141,7 +141,7 @@ class ChatBehaviourTests(unittest.TestCase):
     def test_handoff_actions_only_for_configured_channels(self):
         none = self.ask("I want to talk to an agent", sid="h1")
         self.assertEqual(none["actions"], [])
-        c = make_client(contact_whatsapp="+92 300 1234567", contact_email="hello@example.com", rate_limit_per_min=1000)
+        c = sign_in(make_client(contact_whatsapp="+92 300 1234567", contact_email="hello@example.com", rate_limit_per_min=1000))
         r = c.post("/api/v1/chat", json={"message": "I want to talk to an agent", "session_id": "h2"}).get_json()
         self.assertTrue(r["actions"][0]["url"].startswith("https://wa.me/923001234567?text="))
 

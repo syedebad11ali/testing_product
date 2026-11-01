@@ -12,7 +12,7 @@ from flask import Blueprint, current_app, jsonify, request
 from backend.errors import ApiError
 from backend.security import consent
 from backend.security.cookies import clear_cookie, read_cookie, set_cookie
-from backend.security.guards import current_session
+from backend.security.guards import current_session, require_account
 from backend.services import prefs as prefs_mod
 
 bp = Blueprint("chat", __name__)
@@ -38,6 +38,7 @@ def _read_message(max_len: int) -> tuple[str, str, bool]:
 def chat():
     if request.method == "OPTIONS":
         return "", 204
+    require_account()   # chat is an account feature: anonymous -> 401, guest -> 403 guest_not_allowed
     kpt = current_app.extensions["kpt"]
     kpt.rate_limiter.check(request.remote_addr or "unknown")
     session_id, message, reset = _read_message(kpt.settings.max_message_len)
@@ -69,6 +70,7 @@ def chat_session():
 
     Only the cookie's own conversation is returned (never another visitor's). First name appears only for
     a signed-in user; anonymous visitors get a generic greeting and a last-viewed-property chip."""
+    require_account()   # account feature (anonymous -> 401, guest -> 403 guest_not_allowed)
     kpt = current_app.extensions["kpt"]
     kpt.rate_limiter.check(request.remote_addr or "unknown")
     sid, _ = _continuity_id(kpt)
@@ -105,6 +107,7 @@ def feedback():
     """Store a thumbs rating. Only the question text (truncated) and intent are kept, for admin analytics."""
     if request.method == "OPTIONS":
         return "", 204
+    require_account()   # account feature (anonymous -> 401, guest -> 403 guest_not_allowed)
     kpt = current_app.extensions["kpt"]
     kpt.rate_limiter.check(request.remote_addr or "unknown")
     data = request.get_json(silent=True)

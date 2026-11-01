@@ -4,15 +4,44 @@
  * The server re-validates everything (min 10 characters, common-password check). */
 import { fetchJson } from './services/http.js';
 import { syncPrefsAfterLogin } from './services/accountApi.js';
+import { safeNext } from './features/loginPrompt.js';   // the ONE internal-path validator (shared with the login dialog)
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const API = '/api/v1/auth';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const MIN_PASSWORD = 10; // mirrors backend/security/passwords.py; the server is authoritative
 
-/** Only same-site absolute paths are followed (blocks open redirects such as //evil.example or /\evil). */
+/** Only same-site absolute paths are followed (blocks open redirects such as //evil.example, /\evil, control characters,
+ * overlong values). Delegates to loginPrompt.safeNext so there is a single implementation; `/` for anything else. */
 export function safeRedirect(target) {
-  return typeof target === 'string' && /^\/(?![/\\])/.test(target) ? target : '/';
+  return safeNext(target);
+}
+
+/* Pages that only exist to sign in. Returning a just-authenticated user to one of them is a loop, so a `next` pointing at one is dropped. */
+const AUTH_ONLY_PATHS = new Set(['/login', '/signup', '/nice-try', '/developer-login']);
+
+/** The path part of a safe path with percent-escapes decoded, dot segments resolved, `.html` and trailing slash removed, lowercased
+ * (how the server and the browser will read it). null when it cannot be decoded. */
+function normalisedPathname(path) {
+  const raw = path.split(/[?#]/, 1)[0];
+  let decoded;
+  try { decoded = decodeURIComponent(raw); } catch { return null; }
+  if (/[\u0000-\u001f\u007f-\u009f\\]/.test(decoded)) return null;
+  const out = [];
+  for (const part of decoded.split('/')) {
+    if (part === '' || part === '.') continue;
+    if (part === '..') out.pop(); else out.push(part);
+  }
+  return `/${out.join('/')}`.replace(/\.html$/i, '').toLowerCase();
+}
+
+/** Where to return after a successful sign-in, from the `next` query value: a safe internal path (SPA hashes such as `/#/plot/ABC-123`,
+ * `/#owner-verification`, `/#verify-document` are kept) that is not itself a sign-in page; `/` otherwise. */
+export function returnPath(next) {
+  const target = safeNext(next);
+  if (target === '/') return '/';
+  const name = normalisedPathname(target);
+  return name === null || AUTH_ONLY_PATHS.has(name) ? '/' : target;
 }
 
 /** 0..4 strength score used for the hint bar (the server enforces the real policy). */
@@ -79,7 +108,7 @@ export function guestErrorMessage(status, data) {
 
 export function afterLogin(serverRedirect, next) {
   const target = safeRedirect(serverRedirect);
-  return target === '/' && next ? safeRedirect(next) : target;
+  return target === '/' && next ? returnPath(next) : target;
 }
 
 function fieldWrap(input) { return input.closest('.field'); }
@@ -121,7 +150,18 @@ function setBusy(form, busy, label) {
 const banner = (form, msg) => { $('[data-banner]', form).textContent = msg || ''; };
 const values = (form) => Object.fromEntries([...form.elements].filter((el) => el.name).map((el) => [el.name, el.value]));
 
-async function post(form, path, payload, label, onOk) {
+/** The one place a successful authentication (email/password login, signup, Google) leaves the page: merge preferences, show any
+ * remember note, then go to the server's choice or the validated `next`. Only ever called with the server's success answer. */
+export async function finishAuth(data, next, { sync = syncPrefsAfterLogin, assign = (url) => window.location.assign(url), wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)), note = () => {} } = {}) {
+  if (data.redirect !== '/nice-try') await sync();   // merge cookie prefs into the account
+  if (data.remember_note) {                          // e.g. Preferences cookies not allowed
+    note(data.remember_note);
+    await wait(3000);
+  }
+  assign(afterLogin(data.redirect, next));
+}
+
+export async function post(form, path, payload, label, onOk) {
   banner(form, '');
   setBusy(form, true, label);
   try {
@@ -134,7 +174,7 @@ async function post(form, path, payload, label, onOk) {
 }
 
 /** Loads Google Identity Services and swaps the placeholder buttons for Google's official one. */
-async function setupGoogle(banner, onDone, wantsRemember = () => false) {
+export async function setupGoogle(banner, onDone, wantsRemember = () => false) {
   let cfg;
   try { cfg = (await fetchJson(`${API}/google/config`)).data; } catch { return; }
   if (!cfg || !cfg.configured) return;
@@ -158,9 +198,26 @@ async function setupGoogle(banner, onDone, wantsRemember = () => false) {
     const box = document.createElement('div');
     box.className = 'gbox';
     btn.before(box);
-    gsi.renderButton(box, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'center', width: 400 });
+    // Google's button is an iframe of an exact pixel width, so it is drawn at the width its container really has (never the old fixed 400,
+    // which overflowed a 320-360 px phone) and drawn again when that width changes: the sign-up form starts hidden, phones rotate.
+    let drawn = 0;
+    const draw = () => {
+      const width = googleButtonWidth(box.clientWidth);
+      if (!width || width === drawn) return;
+      drawn = width;
+      box.replaceChildren();
+      gsi.renderButton(box, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'center', width });
+    };
     btn.hidden = true;
+    if (typeof ResizeObserver === 'function') new ResizeObserver(draw).observe(box);
+    draw();
   }
+}
+
+/** Width in px to ask Google for: the container's width, kept inside Google's allowed 200-400 px; 0 while the container is not laid out (hidden form). */
+export function googleButtonWidth(containerPx) {
+  const w = Math.floor(Number(containerPx));
+  return Number.isFinite(w) && w > 0 ? Math.min(400, Math.max(200, w)) : 0;
 }
 
 function loadScript(src) {
@@ -271,14 +328,7 @@ function init() {
   });
 
   const next = params.get('next');
-  const done = async (data) => {
-    if (data.redirect !== '/nice-try') await syncPrefsAfterLogin();   // merge cookie prefs into the account
-    if (data.remember_note) {                                       // e.g. Preferences cookies not allowed
-      banner(document.querySelector('form:not([hidden])'), data.remember_note);
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-    }
-    window.location.assign(afterLogin(data.redirect, next));
-  };
+  const done = (data) => finishAuth(data, next, { note: (msg) => banner(document.querySelector('form:not([hidden])'), msg) });
 
   forms.login.addEventListener('submit', (e) => {
     e.preventDefault();

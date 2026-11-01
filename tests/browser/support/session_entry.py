@@ -25,3 +25,23 @@ def enter_as_guest(page, base, dest="/", dismiss=True):
     if dismiss:
         dismiss_consent(page, wait_ms=3000)  # T5a: the banner appears after guest entry, not on /login
     return page
+
+
+USER_PASSWORD = "quartz-lantern-harbor-91"   # throwaway test password (passes the strength rules; never a real credential)
+
+
+def enter_as_user(page, base, email=None, name="Test Person", password=USER_PASSWORD, dest="/", dismiss=True):
+    """Register a NEW account through the real sign-up form and land on the app as a registered user (G4a3).
+    Use this for tests that exercise account-only features such as the chatbot; guests are refused those since G2/G4.
+    The e-mail is unique per call. Returns the e-mail so a test can log in again."""
+    import uuid
+    email = email or f"user{uuid.uuid4().hex[:10]}@example.com"
+    page.goto(base + "/signup")
+    page.wait_for_selector("#su-name")
+    page.fill("#su-name", name); page.fill("#su-email", email)
+    page.fill("#su-pw", password); page.fill("#su-confirm", password)
+    page.click("#form-signup button[type=submit]")
+    page.wait_for_url(base + dest)
+    if dismiss:
+        dismiss_consent(page, wait_ms=3000)
+    return email

@@ -53,7 +53,7 @@ export function featuredCardHTML(f, index = 0, total = 1) {
         <div class="fc-price">${escapeHtml(f.priceLabel)}</div>
         <div class="fc-chips">${chips}</div>
         <div class="fc-foot">
-          <span class="fc-verif">&#10003; Verification Available</span>
+          <span class="fc-verif">&#10003; Verified</span>
           <button class="fc-cta" type="button" aria-label="View ${escapeHtml(f.title)}">View Property &rarr;</button>
         </div>
       </div>

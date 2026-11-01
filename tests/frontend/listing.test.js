@@ -10,22 +10,26 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const { routeFromHash } = await import('../../frontend/js/app/router.js');
 const { renderListing } = await import('../../frontend/js/features/listing.js');
 const { safeUrl } = await import('../../frontend/js/features/chat.js');
+const { resetSessionUser } = await import('../../frontend/js/services/sessionUser.js');
 const OwnerVerification = (await import('../../frontend/js/domain/ownerVerification.js')).default;
 const { ownerState, state } = await import('../../frontend/js/state/store.js');
 
 const files = OwnerVerification.CSV_FILES.map(name => ({ name, text: fs.readFileSync(path.join(root, 'public', name), 'utf8') }));
 ownerState.store = OwnerVerification.createStore(OwnerVerification.parseFiles(files));
 
-test('deep links map to the listing view and survive a refresh (pure hash parsing)', () => {
-  assert.equal(routeFromHash('#/plot/demo-kpt-1648'), true);
+test('deep links map to the listing view and survive a refresh (pure hash parsing)', async () => {
+  assert.equal(await routeFromHash('#/plot/demo-kpt-1648'), true);
   assert.deepEqual([state.view, state.propId], ['listing', 'DEMO-KPT-1648']);
-  assert.equal(routeFromHash('#/house/DEMO-KPT-8103'), true);
-  assert.equal(routeFromHash('#owner-verification'), true);
+  assert.equal(await routeFromHash('#/house/DEMO-KPT-8103'), true);
+  // G3b2a: routeFromHash is async and #owner-verification is account-only, so it is applied for a registered user (guests: routerGuestGate.test.js)
+  resetSessionUser();   // importing the owner screen already looked the session up (no network here -> signed out)
+  globalThis.fetch = async () => ({ ok: true, status: 200, text: async () => JSON.stringify({ user: { id: 'u1', name: 'Sara', role: 'user', must_change_password: false } }) });
+  assert.equal(await routeFromHash('#owner-verification'), true);
   assert.equal(state.view, 'ownerverify');
 });
 
-test('hostile or malformed hashes are ignored', () => {
-  for (const bad of ['#/plot/<script>alert(1)</script>', '#/plot/', '#/evil/DEMO-KPT-1', '#/plot/' + 'A'.repeat(60), '#/plot/a b', '']) assert.equal(routeFromHash(bad), false, bad);
+test('hostile or malformed hashes are ignored', async () => {
+  for (const bad of ['#/plot/<script>alert(1)</script>', '#/plot/', '#/evil/DEMO-KPT-1', '#/plot/' + 'A'.repeat(60), '#/plot/a b', '']) assert.equal(await routeFromHash(bad), false, bad);
 });
 
 test('listing screen shows dataset facts and never owner fields', () => {
