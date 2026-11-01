@@ -40,7 +40,7 @@ dependencies = [
     "cryptography>=50",            # PIN ME. Was ==46.0.6, which pip-audit reports with 9 known vulnerabilities (fixes in 46.0.x, 49 and 50; the log truncated the exact numbers). Floor raised to the highest fixed version shown. NOT yet installed or tested: install it, run the TOTP/Fernet tests and pip_audit, then pin exactly. Fernet encryption of TOTP secrets at rest (TOTP_ENCRYPTION_KEY)
 
     # --- Price model and data (versions locked to the serialised model) --------
-    "pandas==3.0.2",
+    "pandas==3.1.0",
     "numpy==2.4.4",
     "scikit-learn==1.9.1",
     "scipy==1.17.1",
