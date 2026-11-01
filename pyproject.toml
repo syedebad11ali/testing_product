@@ -1,18 +1,45 @@
 [project]
 name = "karachi-property-trust"
-version = "1.0.0"
-description = "Karachi Property Trust: static frontend + Flask backend (Gemini + offline fallback + price model)."
+version = "1.1.0"
+description = "Karachi Property Trust: static frontend + Flask backend (auth, admin, dual AI engines via the OpenAI Agents SDK with Gemini + OpenAI + offline fallback, price model)."
 requires-python = ">=3.12,<3.13"
 
-# Single source of truth for production dependencies (Vercel installs from here).
-# scikit-learn is pinned to the exact version that serialised backend/ml/price_model.joblib
-# (sklearn_version 1.9.1). numpy/pandas/scipy/joblib/threadpoolctl are pinned to the
-# versions the model + chatbot code were verified against. Do not bump these without
-# running `npm run test:all` (see docs/DEVELOPMENT.md).
+# =============================================================================
+# PRODUCTION DEPENDENCIES  (single source of truth; Vercel installs from here)
+#
+# Rules
+#   * Everything under `dependencies` is imported by code in backend/ or scripts/
+#     that runs in production. Dev/test tools go in [project.optional-dependencies].
+#   * Pin EXACT versions (==). Entries marked "PIN ME" are new: after installing,
+#     run `npm run test:all`, then replace the range with the exact version that
+#     passed (`pip freeze | grep -i <name>`) and delete the "PIN ME" comment.
+#   * scikit-learn is pinned to the exact version that serialised
+#     backend/ml/price_model.joblib (sklearn_version 1.9.1). numpy/pandas/scipy/
+#     joblib/threadpoolctl are pinned to the versions the model was verified
+#     against. Do not bump them without running `npm run test:all`.
+#   * Keep docs/DEPENDENCIES.md in sync (package, version, purpose, who imports it).
+#     tests/backend/test_dependencies.py fails if an import is undeclared or a
+#     declared package is unused.
+# =============================================================================
 dependencies = [
-    "Flask==3.1.3",
-    "python-dotenv==1.2.2",
-    "google-genai>=2.14,<3",
+    # --- Web framework and config ---------------------------------------------
+    "Flask==3.1.3",                # HTTP app, blueprints (backend/app.py, backend/api/*)
+    "python-dotenv==1.2.2",        # loads .env for local development (backend/config.py)
+
+    # --- AI engines: OpenAI Agents SDK managing Gemini + OpenAI ----------------
+    "openai-agents>=0.23,<1",      # PIN ME. `from agents import Agent, Runner, ...` agents, handoffs, guardrails, tools
+    "openai>=3,<4",                # PIN ME. AsyncOpenAI client used by the Agents SDK for OpenAI AND for Gemini's
+                                   #         OpenAI-compatible endpoint (base_url=generativelanguage.googleapis.com/v1beta/openai/)
+    "google-genai>=2.14,<3",       # Gemini native client: only for Google Search grounding (backend/services/grounding.py)
+
+    # --- Accounts, sessions, Google sign-in ------------------------------------
+    "google-auth>=2.30,<3",        # PIN ME. verify Google ID tokens server-side (google.oauth2.id_token)
+    "requests>=2.32,<3",           # PIN ME. HTTP transport required by google-auth to fetch Google's public certs
+    "psycopg[binary]>=3.2,<4",     # PIN ME. PostgreSQL driver (Neon/Supabase) for users, sessions, audit, chat events
+    "pyotp==2.10.0",               # TOTP codes for admin two-factor (backend/services/totp_service.py). Pinned: installed from the wheel and tested
+    "cryptography>=50",            # PIN ME. Was ==46.0.6, which pip-audit reports with 9 known vulnerabilities (fixes in 46.0.x, 49 and 50; the log truncated the exact numbers). Floor raised to the highest fixed version shown. NOT yet installed or tested: install it, run the TOTP/Fernet tests and pip_audit, then pin exactly. Fernet encryption of TOTP secrets at rest (TOTP_ENCRYPTION_KEY)
+
+    # --- Price model and data (versions locked to the serialised model) --------
     "pandas==3.0.2",
     "numpy==2.4.4",
     "scikit-learn==1.9.1",
@@ -21,6 +48,29 @@ dependencies = [
     "threadpoolctl==3.6.0",
 ]
 
+[project.optional-dependencies]
+# Install with: python scripts/install_deps.py --dev   (never installed on Vercel)
+dev = [
+    "ruff>=0.6",                   # PIN ME. lint + format (Python)
+    "bandit>=1.7",                 # PIN ME. static security scan (bandit -r backend)
+    "pip-audit>=2.7",              # PIN ME. known-vulnerability scan of installed packages
+    "playwright==1.56.0",          # Pinned (session 17: Python 3.12.3 + Chromium, every tests/browser/*.py passed). browser smoke tests (tests/browser/smoke.py)
+]
+# Optional: only if you decide to switch password hashing from stdlib scrypt to argon2id.
+argon2 = [
+    "argon2-cffi>=23.1,<26",       # PIN ME.
+]
+
+# Node tooling (tests, lint, SRI helper) is declared in package.json, not here.
+
 # One Flask app: module backend/app.py, variable `app`  ->  "backend.app:app"
 [tool.vercel]
 entrypoint = "backend.app:app"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "S", "UP"]   # S = bandit-style security rules
+ignore = ["S101"]                           # asserts are fine in tests

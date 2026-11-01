@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Karachi Property Trust</title>
+<script src="/js/theme-init.js"></script>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/consent.css">
+<link rel="stylesheet" href="/css/messages.css">
+</head>
+<body class="auth-page admin-page">
+<header class="admin-bar">
+  <h1>Admin</h1>
+  <div><a href="/">Site</a> · <button class="auth-link-btn" id="logout" type="button">Log out</button></div>
+</header>
+<p class="auth-error" id="msg" role="alert" aria-live="assertive"></p>
+<section class="admin-panel" aria-labelledby="h-sec">
+  <h2 id="h-sec">Two-factor authentication</h2>
+  <p id="totp-state" role="status"></p>
+  <p class="auth-hint">Use an authenticator app (for example Google Authenticator, Microsoft Authenticator or 1Password). With two-factor on, banning, reinstating, changing roles and exporting CSV each ask for a fresh 6-digit code.</p>
+  <button type="button" class="auth-btn" id="totp-start" hidden>Set up two-factor</button>
+  <div id="totp-enroll" hidden>
+    <p>In your authenticator app choose <strong>Enter a setup key</strong> and type this key. Keep it private: it is shown only once.</p>
+    <p><code id="totp-secret" aria-label="Setup key"></code></p>
+    <p class="auth-hint">Advanced: <code id="totp-uri"></code></p>
+    <label class="auth-field"><span>6-digit code from the app</span>
+      <input id="totp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></label>
+    <button type="button" class="auth-btn" id="totp-confirm">Turn on two-factor</button>
+  </div>
+  <button type="button" class="auth-link-btn" id="totp-disable" hidden>Turn off two-factor (needs your password above and a code)</button>
+</section>
+<section class="admin-panel" aria-labelledby="h-confirm">
+  <h2 id="h-confirm">Confirm an action</h2>
+  <label class="auth-field"><span>Your password (needed for disable, role change, ban and reinstate)</span>
+    <input id="reauth" type="password" autocomplete="current-password"></label>
+  <label class="auth-field"><span>Reason (required for ban, suspend, reinstate and resolving a report; 3 to 300 characters)</span>
+    <input id="reason" type="text" maxlength="300" autocomplete="off"></label>
+  <label class="auth-field"><span>Ban length</span>
+    <select id="banKind"><option value="7">Suspend for 7 days</option><option value="30">Suspend for 30 days</option><option value="permanent">Permanent ban</option></select></label>
+</section>
+<h2>Users</h2>
+<div class="admin-bar">
+  <input id="q" type="search" placeholder="Search name or email" aria-label="Search users">
+  <select id="fStatus" aria-label="Filter by status"><option value="">Any status</option><option>active</option><option>disabled</option><option>banned</option></select>
+  <select id="fRole" aria-label="Filter by role"><option value="">Any role</option><option>user</option><option>admin</option></select>
+  <select id="fSort" aria-label="Sort users"><option value="created">Newest first</option><option value="last_login">Last login</option><option value="name">Name</option><option value="status">Status</option></select>
+  <span id="total"></span>
+  <button type="button" class="auth-link-btn" id="exportUsers">Export users CSV</button>
+</div>
+<div class="admin-scroll"><table class="admin-table" id="users"><thead><tr><th>Name</th><th>Login</th><th>Role</th><th>Status</th><th>Moderation</th><th>Created</th><th>Last login</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+<div class="admin-pager" id="usersPager"></div>
+<h2>Login activity (newest first)</h2>
+<div class="admin-bar">
+  <input id="eq" type="search" placeholder="Search identifier" aria-label="Search login events">
+  <select id="eOutcome" aria-label="Filter by outcome"><option value="">All outcomes</option><option value="success">Successful</option><option value="failure">Failed</option></select>
+  <select id="eMethod" aria-label="Filter by method"><option value="">All methods</option><option>password</option><option>google</option><option>remember</option></select>
+  <button type="button" class="auth-link-btn" id="exportEvents">Export login events CSV</button>
+</div>
+<div class="admin-scroll"><table class="admin-table" id="events"><thead><tr><th>Time</th><th>Identifier</th><th>Method</th><th>Result</th><th>Reason</th><th>IP hash</th></tr></thead><tbody></tbody></table></div>
+<div class="admin-pager" id="eventsPager"></div>
+<h2>Reported conversations</h2>
+<p class="auth-hint">Only conversations a participant reported appear here. Opening one is recorded in the audit log.</p>
+<div class="admin-scroll"><table class="admin-table" id="reports"><thead><tr><th>Reported</th><th>By</th><th>Reason</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+<pre class="admin-thread" id="thread" hidden></pre>
+<h2>Audit log</h2>
+<div class="admin-scroll"><table class="admin-table" id="audit"><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead><tbody></tbody></table></div>
+<div class="admin-pager" id="auditPager"></div>
+<dialog id="stepup" class="msg-dialog" aria-labelledby="su-title">
+  <form method="dialog" id="su-form">
+    <h2 id="su-title">Confirm with your authenticator</h2>
+    <p>Enter the current 6-digit code to continue.</p>
+    <label class="auth-field"><span>Code</span><input id="su-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></label>
+    <p class="auth-error" id="su-err" role="alert"></p>
+    <div class="msg-dialog-actions"><button type="button" class="auth-link-btn" id="su-cancel">Cancel</button><button type="submit" class="auth-btn">Continue</button></div>
+  </form>
+</dialog>
+<script type="module" src="/js/admin/admin.js"></script>
+<script type="module" src="/js/consent-banner.js"></script>
+</body>
+</html>

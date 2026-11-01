@@ -40,7 +40,7 @@ features/ (screens + controllers)  ──►  domain/ (pure rules)  ──►  d
 - **`features/`** — each screen exports `render*` functions that return HTML strings plus the handlers its markup calls.
 - **`state/store.js`** — a few exported slices (`state`, `ownerState`, `docState`, `docHistory`, `chatState`) plus reset/persist helpers. Slices are never reassigned. Rendering stays explicit (`render()`) because re-rendering on each keystroke would steal focus from form inputs.
 - **`app/router.js`** — `nav()` + `render()` with an **error boundary**: unknown views fall back to home; a throwing screen shows a recovery card.
-- **`ui/actions.js`** — the single list of functions published on `window` for inline `onclick="…"` attributes. `tests/frontend/handlers.test.js` fails if a template calls a handler that is not listed.
+- **`ui/actions.js`** — `ACTIONS`, the allow-list of functions templates may call via `data-onclick="…"` (and `data-oninput/onchange/onsubmit`). **`ui/dispatch.js`** parses those attributes (restricted grammar, no eval) and runs the action from one delegated listener per event type. `tests/frontend/handlers.test.js` fails if a template calls an unregistered action or an inline `on*=` attribute reappears.
 
 ### Error handling
 

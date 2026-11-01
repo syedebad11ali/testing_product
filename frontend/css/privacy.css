@@ -1,0 +1,15 @@
+/* privacy.css — Privacy & cookies page. Light/dark via data-theme (set by theme-init.js). */
+:root{--bg:#f6f8fa;--card:#fff;--ink:#16202b;--muted:#51606f;--line:#d7dee5;--accent:#0b6f68;--danger:#b3261e}
+:root[data-theme="dark"]{--bg:#0b1620;--card:#13222f;--ink:#e8eef4;--muted:#a6b4c2;--line:#27394a;--accent:#5fd6cb;--danger:#ff8a80}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Poppins,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.priv{max-width:860px;margin:0 auto;padding:20px 16px 120px}.priv h1{margin:.4em 0}.priv h2{margin-top:2em}.lead{color:var(--muted)}
+.priv-back,.priv a{color:var(--accent)}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.row{display:flex;gap:12px;align-items:flex-start;margin:10px 0;cursor:pointer}.row input{width:22px;height:22px;margin-top:3px;flex:none}.row strong{display:block}
+.btn{min-height:44px;padding:8px 18px;border-radius:999px;border:2px solid var(--accent);background:var(--accent);color:#fff;font:600 15px inherit;font-family:inherit;cursor:pointer}
+:root[data-theme="dark"] .btn{color:#06201d}.btn.danger{background:transparent;border-color:var(--danger);color:var(--danger)}.btn.small{min-height:36px;padding:4px 12px;font-size:13px}
+.btn:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:600}
+code{background:rgba(127,127,127,.15);padding:1px 6px;border-radius:6px;font-size:13px}
+.devices{list-style:none;padding:0}.devices li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+input[type=password]{display:block;width:100%;max-width:360px;min-height:44px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.hint,.foot{color:var(--muted);font-size:13px}[role=status]{font-size:14px}

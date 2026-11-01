@@ -5,6 +5,7 @@
   --teal-900:#03233B; --teal-700:#03233B; --teal-600:#03233B; --teal-500:#03233B; --teal-100:#E8EEF3;
   --bg:#F5F8F7; --surface:#FFFFFF; --line:#E4EAE8; --text:#16262A; --sub:#5C6E70;
   --brand-text:#03233B; --brand-start:#03233b; --brand-end:#03233b; --accent-shadow:rgba(3,35,59,.35);
+  --favorite-start:var(--teal-700); --favorite-end:var(--teal-700); --favorite-heart-start:#FF6685; --favorite-heart-end:#D91F53;
   --ok:#1F9D63; --warn:#D98E2B; --bad:#C24B3E; --mute:#94A3AC;
   --r-lg:22px; --r-md:16px; --r-sm:10px;
   color-scheme: light;
@@ -14,6 +15,7 @@
   --bg:#0E1716; --surface:#16211F; --line:#26332F; --text:#EAF2EF; --sub:#9FB0AC;
   --teal-900:#0F2A3D; --teal-700:#12796B; --teal-600:#178A78; --teal-500:#1E9A82; --teal-100:#193531;
   --brand-text:#EAF2EF; --brand-start:var(--teal-700); --brand-end:var(--teal-500);
+  --favorite-start:#087F5B; --favorite-end:#35C98A;
   --accent-shadow:rgba(18,121,107,.4);
   color-scheme: dark;
 }
@@ -28,6 +30,10 @@ body{
 }
 h1,h2,h3,.brand{font-family:'Poppins',-apple-system,sans-serif;}
 button{font-family:inherit; cursor:pointer;}
+.favorite-heart{color:inherit;}
+.saved .favorite-heart{background:linear-gradient(135deg,var(--favorite-heart-start),var(--favorite-heart-end));background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+:root[data-theme="dark"] .favorite-heart{-webkit-text-stroke:0.5px #011425;}
+:root[data-theme="dark"] .saved .favorite-heart{-webkit-text-stroke:0;}
 img,svg{max-width:100%;}
 a{color:inherit;}
 .wrap{max-width:1320px; margin:0 auto; position:relative; min-height:100vh; background:var(--bg);}
@@ -102,7 +108,16 @@ a{color:inherit;}
   :root[data-theme="dark"] .theme-toggle-thumb{transform:translateX(24px);}
   .topnav-menu{width:36px;height:36px;}
 }
+@media (max-width:280px){
+  .topnav-inner{gap:4px;padding-right:6px;padding-left:6px;}
+  .topnav-text{display:none;}
+  .theme-toggle-track{width:44px;}
+  :root[data-theme="dark"] .theme-toggle-thumb{transform:translateX(14px);}
+  .topnav-menu{width:32px;height:32px;}
+}
+@media (max-width:640px){
+  .topnav-text{display:none;}
+}
 @media (min-width:640px) and (max-width:1023.98px){
   .grid{grid-template-columns:repeat(3,1fr);}
 }
-

@@ -1,0 +1,9 @@
+/* listing.css — detail screen for one dataset listing (deep link /#/plot/<id>). */
+.listing{max-width:720px;margin:0 auto;padding:16px;}
+.listing h1{font-size:22px;margin:8px 0;}
+.listing-price{font-size:26px;font-weight:800;color:var(--teal-700);}
+.listing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0;}
+.listing-grid div{padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}
+.listing-grid dt{font-size:11px;color:var(--text-muted,var(--text));}.listing-grid dd{margin:2px 0 0;font-weight:700;}
+.listing-actions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+.listing-note{font-size:12px;color:var(--text-muted,var(--text));}

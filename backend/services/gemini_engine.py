@@ -1,6 +1,7 @@
 """Gemini-backed answer engine (tool calling + Google Search grounding) with model fallback."""
 import logging
 
+from backend.services.ai.errors import redact
 from backend.services.prompts import SEARCH_SYSTEM_PROMPT, SYSTEM_PROMPT
 from backend.services.tools import make_tools
 
@@ -12,17 +13,26 @@ class GeminiEngine:
         self.key = settings.gemini_api_key
         self.models = list(settings.gemini_models)
         self.client = None
+        self.disabled_reason = None if self.key else "no_key"
+        self.last_error = None
         if self.key:
             try:
                 from google import genai
                 from google.genai import types
                 self.client = genai.Client(api_key=self.key, http_options=types.HttpOptions(timeout=settings.gemini_timeout_ms))
             except Exception as e:
-                log.warning("Gemini unavailable: %s", e)
+                self.disabled_reason = "client_error"
+                self.last_error = f"client_error: {type(e).__name__}: {redact(e)[:200]}"
+                log.warning("Gemini unavailable: %s", redact(e))
 
     @property
     def enabled(self):
         return self.client is not None
+
+    def status(self):
+        """Safe for the admin-only health detail: never includes the key; last_error is redacted."""
+        return {"enabled": self.enabled, "key_present": bool(self.key), "models": list(self.models),
+                "disabled_reason": self.disabled_reason, "last_error": self.last_error}
 
     @staticmethod
     def _contents(history, message):

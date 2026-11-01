@@ -3,9 +3,13 @@
 Inline scripts that must stay (the theme bootstrap in ``index.html``) are allowed by SHA-256
 hash, computed at startup from the real file so the hash can never go stale.
 
-KNOWN GAP (docs/KNOWN_ISSUES.md): ``script-src-attr`` and ``style-src`` still allow
-``'unsafe-inline'`` because ~91 inline ``onclick`` handlers and inline ``style`` attributes
-remain. Phase 2 (data-action migration) removes both; then delete those two tokens.
+STRICT STYLES (docs/KNOWN_ISSUES.md): every HTML page is served with a ``style-src`` that has NO ``'unsafe-inline'``
+(``STRICT_STYLE_PATHS`` plus HTML 404s). tests/frontend/strictStyles.test.js proves each page's HTML and every module it
+loads contain no inline style markup, and tests/browser/csp_test.py loads them all watching for CSP violations. Computed
+styles are applied through the CSSOM (ui/dataStyle.js), which CSP allows. ``/chatbot-demo`` is strict too (session 17: its
+one inline <style> block moved to css/widget-demo.css; the widget itself only writes styles through the CSSOM). The embeddable
+widget runs under the EMBEDDING site's CSP when used elsewhere, which this file cannot control. Inline event handlers are
+forbidden too (``script-src-attr 'none'``).
 """
 from __future__ import annotations
 
@@ -35,16 +39,29 @@ def inline_script_hashes(html_files: list[Path]) -> list[str]:
     return out
 
 
-def build_csp(script_hashes: list[str]) -> str:
+INLINE_STYLE = "'unsafe-inline' "  # only for paths outside STRICT_STYLE_PATHS (none of the HTML pages today)
+GIS = "https://accounts.google.com/gsi/"  # the only Google sign-in surface the CSP opens
+
+
+# Pages verified free of inline styles (HTML + the whole module graph they load). Add a path here only together with
+# its entry scripts in tests/frontend/strictStyles.test.js, which fails if any covered file gains inline style markup.
+STRICT_STYLE_PATHS = frozenset({
+    "/", "/index.html", "/login", "/signup", "/admin", "/admin.html", "/privacy", "/privacy.html", "/messages", "/messages.html",
+    "/listings", "/listings.html", "/nice-try", "/nice-try.html", "/chatbot-demo",
+})
+
+
+def build_csp(script_hashes: list[str], strict_styles: bool = False) -> str:
     directives = {
         "default-src": "'self'",
-        "script-src": " ".join(["'self'", CDN, "'wasm-unsafe-eval'", *script_hashes]),
-        "script-src-attr": "'unsafe-inline'",  # TEMPORARY, see module docstring
-        "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",  # TEMPORARY inline styles
+        "script-src": " ".join(["'self'", CDN, GIS + "client", "'wasm-unsafe-eval'", *script_hashes]),
+        "script-src-attr": "'none'",  # inline on*="" handlers are gone (ui/dispatch.js)
+        "style-src": f"'self' {'' if strict_styles else INLINE_STYLE}https://fonts.googleapis.com {GIS}style",
         "font-src": "'self' https://fonts.gstatic.com",
         "img-src": "'self' data: blob:",
         "media-src": "'self' blob:",
-        "connect-src": f"'self' {CDN} https://tessdata.projectnaptha.com blob: data:",
+        "connect-src": f"'self' {CDN} https://tessdata.projectnaptha.com {GIS} blob: data:",
+        "frame-src": GIS,  # Google Identity Services button / FedCM iframe
         "worker-src": "'self' blob:",
         "object-src": "'none'",
         "base-uri": "'self'",
@@ -55,7 +72,8 @@ def build_csp(script_hashes: list[str]) -> str:
 
 
 def register_security_headers(app: Flask, settings: Settings) -> None:
-    csp = build_csp(inline_script_hashes([settings.frontend_dir / "index.html"]))
+    hashes = inline_script_hashes([settings.frontend_dir / "index.html"])
+    csp, strict_csp = build_csp(hashes), build_csp(hashes, strict_styles=True)
     static = {
         "Content-Security-Policy": csp,
         "X-Content-Type-Options": "nosniff",
@@ -78,8 +96,12 @@ def register_security_headers(app: Flask, settings: Settings) -> None:
         for name, value in static.items():
             resp.headers.setdefault(name, value)
         # The widget script is embedded cross-site by <script>, which CORP same-site would block.
+        if request.path in STRICT_STYLE_PATHS or (resp.status_code == 404 and resp.mimetype == "text/html"):
+            resp.headers["Content-Security-Policy"] = strict_csp
         if request.path.startswith("/static/chatbot."):
             resp.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
+        if request.path in ("/login", "/signup"):  # Google's button popup needs window.opener; only these pages
+            resp.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
         if request.path.startswith(("/api/", "/admin", "/login", "/signup")):
             resp.headers["Cache-Control"] = "no-store"
         resp.headers["X-Request-ID"] = getattr(g, "request_id", "")

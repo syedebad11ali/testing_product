@@ -1,0 +1,12 @@
+/* tokens.css — brand design tokens taken from the login design reference (navy / teal / blue, Poppins).
+ * Part 7 will grow this into the full design system (spacing, radii, shadows, semantic colours, dark theme).
+ * Poppins is self-hosted (public/assets/fonts). Only 400/500/700 are shipped; weight 600 resolves to 700. */
+@font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("/assets/fonts/poppins-Regular.woff") format("woff")}
+@font-face{font-family:"Poppins";font-style:normal;font-weight:500;font-display:swap;src:url("/assets/fonts/poppins-Medium.woff") format("woff")}
+@font-face{font-family:"Poppins";font-style:normal;font-weight:700;font-display:swap;src:url("/assets/fonts/poppins-Bold.woff") format("woff")}
+
+:root{
+  --navy:#072a40; --navy-2:#0b3a55; --teal:#1fc7a0; --blue:#1b74d8; --ink:#0b2f4a;
+  --font-brand:Poppins,"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --focus-ring:3px solid var(--teal);
+}

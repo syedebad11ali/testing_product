@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seller listings · Karachi Property Trust</title>
+<meta name="description" content="Listings submitted by sellers on Karachi Property Trust. Seller-submitted listings are unverified.">
+<script src="/js/theme-init.js"></script>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/messages.css">
+<link rel="stylesheet" href="/css/listings.css">
+<link rel="stylesheet" href="/css/consent.css">
+</head>
+<body class="auth-page msg-page">
+<header class="admin-bar"><h1>Seller listings</h1><div><a href="/">Back to the site</a> · <a href="/messages" id="messages-link">Messages</a> <span class="auth-guest" id="guest-badge" hidden>Guest</span></div></header>
+<p class="msg-safety">These listings are submitted by sellers and are <strong>not verified</strong> by Karachi Property Trust. Never send money or share passwords before verifying the property and the seller.</p>
+<p class="auth-error" id="msg" role="alert" aria-live="assertive"></p>
+
+<section id="detail" class="ls-card" aria-label="Listing details" hidden>
+  <button type="button" class="auth-link-btn" id="detail-close">&larr; All listings</button>
+  <h2 id="d-title"></h2>
+  <p><span id="d-area"></span> · <span class="ls-badge">Seller-submitted, unverified</span></p>
+  <p class="auth-hint">Reference <code id="d-ref"></code></p>
+  <button type="button" class="auth-btn" id="d-chat">Chat with seller</button>
+  <p class="auth-hint" id="sellerChatNote" role="status" aria-live="polite"></p>
+</section>
+
+<div id="lists">
+  <section class="ls-card" id="create-card" aria-labelledby="h-create">
+    <h2 id="h-create">Create a listing</h2>
+    <p id="login-note" class="auth-hint" hidden>Please <a href="/login?next=/listings">log in</a> or <a href="/signup">sign up</a> to create a listing.</p>
+    <form id="create-form" novalidate hidden>
+      <label for="c-title">Title</label>
+      <input id="c-title" type="text" maxlength="120" autocomplete="off" aria-describedby="c-help">
+      <label for="c-area">Area</label>
+      <input id="c-area" type="text" maxlength="80" autocomplete="off">
+      <p class="auth-hint" id="c-help">Plain text only. Your listing is shown as unverified and buyers can message you about it. Prices, photos and ownership checks are not part of this version.</p>
+      <button class="auth-btn" id="c-submit" type="submit">Create listing</button>
+      <p class="auth-hint" id="c-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="ls-card" id="mine-card" aria-labelledby="h-mine" hidden>
+    <h2 id="h-mine">My listings</h2>
+    <p class="auth-hint">Closing a listing hides it from browse and stops new chats; existing conversations are kept. You can reopen it any time. Listings cannot be deleted in this version.</p>
+    <p class="auth-hint" id="mine-status" role="status" aria-live="polite"></p>
+    <ul id="mine" class="ls-list"></ul>
+    <nav id="mine-pager" class="ls-pager" aria-label="My listings pages" hidden>
+      <button type="button" id="mine-prev" class="ls-btn">Previous</button>
+      <span id="mine-page" role="status"></span>
+      <button type="button" id="mine-next" class="ls-btn">Next</button>
+    </nav>
+    <p id="mine-empty" class="msg-empty" hidden>You have no listings yet.</p>
+  </section>
+
+  <section class="ls-card" aria-labelledby="h-browse">
+    <h2 id="h-browse">Browse listings</h2>
+    <ul id="browse" class="ls-list"></ul>
+    <p id="browse-empty" class="msg-empty" hidden>No seller listings yet.</p>
+    <button type="button" class="auth-link-btn" id="more" hidden>Load more</button>
+  </section>
+</div>
+<script type="module" src="/js/listings-page.js"></script>
+<script type="module" src="/js/consent-banner.js"></script>
+</body>
+</html>

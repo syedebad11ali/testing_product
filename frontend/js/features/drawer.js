@@ -14,11 +14,11 @@ export function renderDrawerNav(){
     ['reportslist','Report A Scam','doc', false],
   ];
   document.getElementById('drawerNav').innerHTML = items.map(([v,label,icon,scroll])=>`
-    <button class="drawer-item" onclick="${v==='verify-document'?'openVerifyDocument()':`nav('${v}')`};closeDrawer();${scroll?'scrollToGrid();':''}">
+    <button class="drawer-item" data-onclick="${v==='verify-document'?'openVerifyDocument()':`nav('${v}')`};closeDrawer();${scroll?'scrollToGrid();':''}">
       <span class="di-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${iconSvg(icon)}</svg></span>
       ${label}<span class="chev">›</span>
     </button>`).join('') + `
-    <button class="drawer-item" onclick="openChat();closeDrawer();">
+    <button class="drawer-item" data-onclick="openChat();closeDrawer();">
       <span class="di-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${iconSvg('faq')}</svg></span>
       Property Assistance<span class="chev">›</span>
     </button>`;

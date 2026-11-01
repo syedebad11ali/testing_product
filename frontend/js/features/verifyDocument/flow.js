@@ -5,11 +5,13 @@ import { buildAutomaticResult, runDocumentChecks } from '../../domain/documentVe
 import Extraction from '../../domain/extraction.js';
 import { isCameraSupported, stopDocumentCamera } from './camera.js';
 import { assessImageQualityFromDataUrl, readPdfText, runRealOCR } from '../../services/ocr.js';
-import { docHistory, docState, freshDocState, resetDocState, saveDocHistory, state } from '../../state/store.js';
+import { addDocHistory, docHistory, docHistoryAllowed, docState, freshDocState, removeDocHistory, resetDocState, state } from '../../state/store.js';
+import { isAccountSession } from '../../services/sessionUser.js';
+import { gateThen } from './access.js';
 
-export function openVerifyDocument(){ stopDocumentCamera(); resetDocState(); nav('verify-document'); }
+export function openVerifyDocument(){ if(!isAccountSession()) return gateThen(()=>openVerifyDocument()); stopDocumentCamera(); resetDocState(); nav('verify-document'); }
 
-export function openReportEvidenceUpload(){
+export function openReportEvidenceUpload(){ if(!isAccountSession()) return gateThen(()=>openReportEvidenceUpload());
   stopDocumentCamera();
   resetDocState();
   docState.method = 'upload';
@@ -21,7 +23,7 @@ export function openReportEvidenceUpload(){
   window.scrollTo(0,0);
 }
 
-export function openReportEvidenceCamera(){
+export function openReportEvidenceCamera(){ if(!isAccountSession()) return gateThen(()=>openReportEvidenceCamera());
   stopDocumentCamera();
   resetDocState();
   docState.method = 'camera';
@@ -34,7 +36,7 @@ export function openReportEvidenceCamera(){
   window.scrollTo(0,0);
 }
 
-export function docGoStep(step){ if(docState.step==='camera' && step!=='camera') stopDocumentCamera(); docState.step = step; render(); window.scrollTo(0,0); }
+export function docGoStep(step){ if(!isAccountSession()) return gateThen(()=>docGoStep(step)); if(docState.step==='camera' && step!=='camera') stopDocumentCamera(); docState.step = step; render(); window.scrollTo(0,0); }
 
 /* Upload and Camera are the PRIMARY automatic path: no document-type
    selection and no manual-field form is shown for either of them
@@ -42,7 +44,7 @@ export function docGoStep(step){ if(docState.step==='camera' && step!=='camera')
    startAutomaticVerification). "Enter Details Manually" is kept as a
    clearly secondary fallback and is the only path that still asks the
    user to pick a document type first, since that old flow depends on it. */
-export function docPickMethod(method){
+export function docPickMethod(method){ if(!isAccountSession()) return gateThen(()=>docPickMethod(method));
   stopDocumentCamera();
   docState.method=method; docState.docType=null; docState.file=null; docState.fields={};
   docState.fileError=null; docState.formError=null; docState.cameraPhase=null;
@@ -54,21 +56,21 @@ export function docPickMethod(method){
   else { docGoStep('type'); }
 }
 
-export function docPickAutoType(key){
+export function docPickAutoType(key){ if(!isAccountSession()) return gateThen(()=>docPickAutoType(key));
   docState.typeKey=key;
   if(docState.method==='camera'){ docState.cameraPhase = isCameraSupported() ? 'requesting' : 'unavailable'; docGoStep('camera'); }
   else if(docState.method==='sample'){ docLoadSample(docState.pendingSample); }
   else { docGoStep('upload'); }
 }
 
-export function docPickType(type){
+export function docPickType(type){ if(!isAccountSession()) return gateThen(()=>docPickType(type));
   docState.docType=type; docState.fields={};
   docGoStep('manual'); // only the manual fallback still reaches this screen
 }
 
 export function docSetField(key,val){ docState.fields[key]=val; }
 
-export function docHandleFile(el){
+export function docHandleFile(el){ if(!isAccountSession()) return gateThen(()=>docHandleFile(el));
   const file = el.files && el.files[0]; if(!file) return;
   const nameOk = /\.(pdf|jpe?g|png)$/i.test(file.name);
   const typeOk = ['application/pdf','image/jpeg','image/jpg','image/png'].includes(file.type);
@@ -100,7 +102,7 @@ function docTickProcList(){
   if(item){ item.classList.add('done'); const dot=item.querySelector('.dot'); if(dot) dot.textContent='✓'; }
 }
 
-export function docStartSample(typeKey, base, variant, ext){
+export function docStartSample(typeKey, base, variant, ext){ if(!isAccountSession()) return gateThen(()=>docStartSample(typeKey, base, variant, ext));
   docState.method='sample'; docState.typeKey=typeKey; docState.pendingSample={base:base, variant:variant, ext:ext};
   docLoadSample(docState.pendingSample);
 }
@@ -124,7 +126,7 @@ async function docLoadSample(sm){
   }
 }
 
-export function docStartManualCheck(){
+export function docStartManualCheck(){ if(!isAccountSession()) return gateThen(()=>docStartManualCheck());
   const hasAny = Object.values(docState.fields).some(v=>v && v.trim && v.trim());
   if(!hasAny){ docState.formError='Please enter at least the owner name and one property reference before checking.'; render(); return; }
   docState.formError=null;
@@ -137,7 +139,7 @@ export function docStartManualCheck(){
       clearInterval(timer);
       setTimeout(()=>{
         docState.result = Object.assign({pipeline:'manual'}, runDocumentChecks(docState.docType, docState.fields, false, null));
-        docHistory.unshift(docState.result); saveDocHistory();
+        addDocHistory(docState.result);
         docState.historyIndex = null;
         docGoStep('manual-result');
       }, 350);
@@ -145,11 +147,18 @@ export function docStartManualCheck(){
   }, 420);
 }
 
-export function docViewHistory(i){ docState.historyIndex=i; docState.result=docHistory[i]; docGoStep(docHistory[i].method==='upload'?'result':'manual-result'); }
+export function docViewHistory(i){
+  if(!isAccountSession()) return gateThen(()=>docViewHistory(i));
+  if(!docHistoryAllowed() || !Number.isInteger(i) || !docHistory[i]) return;   // someone else's / expired / unknown entry: nothing is shown
+  docState.historyIndex=i; docState.result=docHistory[i]; docGoStep(docHistory[i].method==='upload'?'result':'manual-result');
+}
 
-export function docDeleteHistory(i){ docHistory.splice(i,1); saveDocHistory(); render(); }
+export function docDeleteHistory(i){
+  if(!isAccountSession()) return gateThen(()=>docDeleteHistory(i));
+  if(removeDocHistory(i)) render();
+}
 
-export async function startAutomaticVerification(){
+export async function startAutomaticVerification(){ if(!isAccountSession()) return gateThen(()=>startAutomaticVerification());
   const f = docState.file;
   if(!f){ docState.fileError='Please upload a document first, or switch to Enter Details Manually.'; render(); return; }
   docState.extraction = null; docState.ocrText=''; docState.ocrProgress = 0;
@@ -191,7 +200,7 @@ export function finishOcrWithText(text, source){
   }
   const result = buildAutomaticResult(extraction, docState.file, source);
   docState.result = result;
-  docHistory.unshift(result); saveDocHistory();
+  addDocHistory(result);
   docState.historyIndex = null;
   docState.showNotVerifiedModal = (result.status==='not_verified' || result.status==='suspicious');
   docGoStep('result');

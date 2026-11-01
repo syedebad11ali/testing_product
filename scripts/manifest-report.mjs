@@ -67,7 +67,7 @@ function normalizeExpected(str){
   return 'unknown';
 }
 
-const decide = (extraction, anchor, lane) => E.decide(extraction, anchor, {ocr: lane==='ocr'});
+const decide = (extraction, anchor, lane) => E.decide(extraction, anchor, {ocr: lane==='ocr', records: PROPERTIES});   // same inputs the app passes (records enable the party cross-check)
 
 function loadText(baseName, lane){
   const file = path.join(FIX, lane==='ocr' ? 'ocr_text' : 'pdf_text', baseName + '.txt');
@@ -86,10 +86,14 @@ function runLane(lane){
     const decision = decide(extraction, anchor, lane);
     const expected = normalizeExpected(entry.expected_result);
     const freeMatch = E.matchProperty(extraction, PROPERTIES);
+    // What the APPLICATION would answer: record chosen by free search (no property context for an uploaded file), via the same
+    // shared function documentVerification.js calls. "actual"/"pass" above stay ANCHORED to the manifest's own property.
+    const app = E.verifyAgainstRecords(extraction, PROPERTIES, {ocr: lane==='ocr'});
 
     rows.push({
       file: baseName, lane, type: entry.type, expected, actual: decision.status,
       pass: expected === decision.status,
+      appActual: app.status, appPass: expected === app.status, appMatchedId: app.matched ? app.matched.id : null,
       reasons: decision.reasons,
       extractedName: extraction.ownerName.display, extractedPlot: extraction.plotNumber.display, extractedCnic: extraction.cnic.display,
       expectedOwner: entry.expected_owner, expectedPlot: entry.expected_plot, expectedCnic: entry.expected_cnic,
@@ -133,7 +137,17 @@ console.log('\n=== Free-search vs anchored-property agreement ===');
   }
 });
 
-console.log('\nSUMMARY: OCR lane '+ocrPass+'/'+ocrRows.length+' | PDF lane '+pdfPass+'/'+pdfRows.length);
+console.log('\n=== Anchored vs application path (rows where they differ) ===');
+const diverge = [...ocrRows, ...pdfRows].filter(r => r.actual !== r.appActual);
+diverge.forEach(r => console.log(r.lane+'/'+r.file+': expected '+r.expected+' | anchored '+r.actual+' | application path '+r.appActual+(r.appMatchedId ? ' (record '+r.appMatchedId+')' : '')));
+if(!diverge.length) console.log('(none)');
+const falsePositives = [...ocrRows, ...pdfRows].filter(r => r.appActual === 'verified' && r.expected !== 'verified');
+console.log('Application path: verified although the manifest expects otherwise = '+falsePositives.length+(falsePositives.length ? ' -> '+falsePositives.map(r=>r.lane+'/'+r.file).join(', ') : ''));
+const ocrApp = ocrRows.filter(r=>r.appPass).length, pdfApp = pdfRows.filter(r=>r.appPass).length;
+
+console.log('\nSUMMARY (anchored to the manifest record): OCR lane '+ocrPass+'/'+ocrRows.length+' | PDF lane '+pdfPass+'/'+pdfRows.length);
+console.log('SUMMARY (application path, record picked by free search): OCR lane '+ocrApp+'/'+ocrRows.length+' | PDF lane '+pdfApp+'/'+pdfRows.length);
+console.log('A "pass" = the status equals the manifest expected_result after normalisation (verified | not_verified | unable_to_verify | suspicious). Fixture records only (3); the app also holds 8 more records.');
 
 const outDir = path.join(ROOT, 'tests', '.results');
 fs.mkdirSync(outDir, { recursive: true });

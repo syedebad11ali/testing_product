@@ -40,33 +40,33 @@ function renderDocLanding(){
   ${docHeader('Verify Your Document','Upload or capture a clear photo of your property document. It will be read automatically.', "nav('home')")}
   <main>
     <div class="doc-options">
-      <div class="doc-option-card" onclick="docPickMethod('upload')">
+      <div class="doc-option-card" data-onclick="docPickMethod('upload')">
         <div class="doc-option-icon">📄</div>
         <h3>Upload Document</h3>
         <p>Choose a document from your device. We'll nead it automatically — no typing required.</p>
-        <button class="btn btn-primary btn-block" style="margin-top:0;" onclick="event.stopPropagation();docPickMethod('upload')">Upload Document</button>
+        <button class="btn btn-primary btn-block u-margin-top-0" data-onclick="stopPropagation();docPickMethod('upload')">Upload Document</button>
       </div>
-      <div class="doc-option-card" onclick="docPickMethod('camera')">
+      <div class="doc-option-card" data-onclick="docPickMethod('camera')">
         <div class="doc-option-icon">📷</div>
         <h3>Scan / Capture Document</h3>
         <p>Use your camera to capture a clear image of your document.</p>
-        <button class="btn btn-primary btn-block" style="margin-top:0;" onclick="event.stopPropagation();docPickMethod('camera')">Open Camera</button>
+        <button class="btn btn-primary btn-block u-margin-top-0" data-onclick="stopPropagation();docPickMethod('camera')">Open Camera</button>
       </div>
     </div>
 
-    <div class="auth-note" style="text-align:center;margin-top:6px;">
+    <div class="auth-note u-text-align-center-margin-top-6px">
       Can't provide a readable document?
-      <a href="javascript:void(0)" onclick="docPickMethod('manual')">Enter details manually instead</a>.
+      <a href="javascript:void(0)" data-onclick="docPickMethod('manual')">Enter details manually instead</a>.
     </div>
 
     ${renderSampleDocsSection()}
 
     <div class="section-title">Not the Same as "Verify This Property"</div>
-    <div class="vcat-note" style="padding:0 2px;">"Verify This Property" checks an entire property listing across multiple categories. "Verify Your Document" independently checks one document — even if the property isn't listed here at all.</div>
+    <div class="vcat-note u-padding-0-2px">"Verify This Property" checks an entire property listing across multiple categories. "Verify Your Document" independently checks one document — even if the property isn't listed here at all.</div>
 
     ${docHistory.length ? `
     <div class="section-title">My Document Checks</div>
-    <div class="vcat" style="cursor:pointer;" onclick="docGoStep('history')">
+    <div class="vcat u-cursor-pointer" data-onclick="docGoStep('history')">
       <div class="vcat-head"><div class="vcat-title">📁 View past document checks</div><span class="vitem-chev">›</span></div>
       <div class="vcat-note">${docHistory.length} result${docHistory.length===1?'':'s'} saved on this device.</div>
     </div>` : ''}
@@ -78,7 +78,7 @@ function renderDocTypeSelect(){
   ${docHeader('Select Document Type', docState.method==='upload'?'What kind of document are you uploading?':docState.method==='camera'?'What kind of document are you capturing?':'What kind of document is this?', "docGoStep('landing')")}
   <main>
     <div class="doctype-grid">
-      ${DOC_TYPES.map(t=>`<button class="doctype-chip" onclick="docPickType(${JSON.stringify(t)})">${t}</button>`).join('')}
+      ${DOC_TYPES.map(t=>`<button class="doctype-chip" data-onclick="docPickType(${JSON.stringify(t)})">${t}</button>`).join('')}
     </div>
   </main>`;
 }
@@ -87,29 +87,29 @@ function renderDocAutoTypeSelect(){
   return `
   ${docHeader('Select Document Type','Choose the kind of document. You will not need to type any details — they are read automatically.', "docGoStep('landing')")}
   <main><div class="doctype-grid">
-    ${AUTO_DOC_TYPES.map(t=>`<button class="doctype-chip" onclick="docPickAutoType('${t[0]}')">${t[1]}</button>`).join('')}
+    ${AUTO_DOC_TYPES.map(t=>`<button class="doctype-chip" data-onclick="docPickAutoType('${t[0]}')">${t[1]}</button>`).join('')}
   </div></main>`;
 }
 
 function renderSampleDocsSection(){
   return `
-  <div class="section-title">Try Sample Documents <span style="font-size:10px;font-weight:600;color:var(--mute);">(demo/testing only — fictional)</span></div>
+  <div class="section-title">Try Sample Documents <span class="u-font-size-10px-font-weight-600-color-v-ce68f">(demo/testing only — fictional)</span></div>
   <div class="vcat">${SAMPLE_DOCS.map(d=>`
-    <div class="check-item" style="align-items:center;gap:6px;flex-wrap:wrap;">
-      <span style="min-width:130px;font-weight:700;">${d[1]}</span>
-      <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;margin:0;" onclick="docStartSample('${d[0]}','${d[2]}','matching','png')">Matching</button>
-      <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;margin:0;" onclick="docStartSample('${d[0]}','${d[2]}','mismatch','png')">Mismatch</button>
-      <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;margin:0;" onclick="docStartSample('${d[0]}','${d[2]}','matching','pdf')">PDF</button>
+    <div class="check-item u-align-items-center-gap-6px-flex-wrap-wrap">
+      <span class="u-min-width-130px-font-weight-700">${d[1]}</span>
+      <button class="btn btn-outline u-padding-4px-8px-font-size-11px-margin-0" data-onclick="docStartSample('${d[0]}','${d[2]}','matching','png')">Matching</button>
+      <button class="btn btn-outline u-padding-4px-8px-font-size-11px-margin-0" data-onclick="docStartSample('${d[0]}','${d[2]}','mismatch','png')">Mismatch</button>
+      <button class="btn btn-outline u-padding-4px-8px-font-size-11px-margin-0" data-onclick="docStartSample('${d[0]}','${d[2]}','matching','pdf')">PDF</button>
     </div>`).join('')}</div>`;
 }
 
 function docHeader(title, subtitle, backAction){
-  return `<div class="header" style="padding-bottom:20px;">
+  return `<div class="header u-padding-bottom-20px">
     <div class="header-top">
-      <button class="icon-btn" onclick="${backAction}" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="icon-btn" data-onclick="${backAction}" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="logo-badge"><img src="${LOGO_URL}" alt="Karachi Property Trust"></div>
     </div>
-    <div class="brand-block"><div class="brand" style="font-size:19px;">${title}</div>${subtitle?`<div class="tagline">${subtitle}</div>`:''}</div>
+    <div class="brand-block"><div class="brand u-font-size-19px">${title}</div>${subtitle?`<div class="tagline">${subtitle}</div>`:''}</div>
   </div>`;
 }
 
@@ -117,8 +117,8 @@ function docFieldsFormHtml(fieldsForType){
   return `<div class="mini-form">
     ${fieldsForType.map(k=>{
       const def = DOC_FIELD_DEFS[k]; const val = docState.fields[k]||'';
-      if(def.type==='textarea') return `<label>${def.label}</label><textarea oninput="docSetField('${k}',this.value)">${val}</textarea>`;
-      return `<label>${def.label}</label><input type="${def.type||'text'}" placeholder="${def.ph||'Not detected — please confirm'}" value="${val}" oninput="docSetField('${k}',this.value)">`;
+      if(def.type==='textarea') return `<label>${def.label}</label><textarea data-oninput="docSetField('${k}',this.value)">${val}</textarea>`;
+      return `<label>${def.label}</label><input type="${def.type||'text'}" placeholder="${def.ph||'Not detected — please confirm'}" value="${val}" data-oninput="docSetField('${k}',this.value)">`;
     }).join('')}
   </div>`;
 }
@@ -130,26 +130,26 @@ function renderDocUploadForm(){
   <main>
     ${!f ? `
     <div class="dropzone">
-      <div style="font-size:30px;">📎</div>
-      <div style="font-weight:700;margin-top:8px;">Upload Your Property Document</div>
-      <div style="font-size:12px;color:var(--sub);margin-top:4px;">JPG and PNG are read automatically. PDF is accepted but not yet auto-read in this build — a photo of the page works best.</div>
+      <div class="u-font-size-30px">📎</div>
+      <div class="u-font-weight-700-margin-top-8px">Upload Your Property Document</div>
+      <div class="u-font-size-12px-color-var-sub-margin-top-4px">JPG and PNG are read automatically. PDF is accepted but not yet auto-read in this build — a photo of the page works best.</div>
       <div class="dropzone-actions">
         <label class="upload-btn" for="docfile">Upload from Device</label>
-        <input type="file" id="docfile" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" onchange="docHandleFile(this)">
+        <input type="file" id="docfile" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" data-onchange="docHandleFile(this)">
         <label class="upload-btn cam" for="docfilecam">📷 Take Photo</label>
-        <input type="file" id="docfilecam" accept="image/*" capture="environment" onchange="docHandleFile(this)">
+        <input type="file" id="docfilecam" accept="image/*" capture="environment" data-onchange="docHandleFile(this)">
       </div>
-      ${docState.fileError?`<div class="auth-note" style="color:var(--bad);margin-top:10px;">${escapeHtml(docState.fileError)}</div>`:''}
+      ${docState.fileError?`<div class="auth-note u-color-var-bad-margin-top-10px">${escapeHtml(docState.fileError)}</div>`:''}
     </div>
-    <div class="auth-note" style="text-align:center;margin-top:14px;">Can't provide a readable document? <a href="javascript:void(0)" onclick="docPickMethod('manual')">Enter details manually instead</a>.</div>
+    <div class="auth-note u-text-align-center-margin-top-14px">Can't provide a readable document? <a href="javascript:void(0)" data-onclick="docPickMethod('manual')">Enter details manually instead</a>.</div>
     ` : `
     <div class="file-chip">
-      <div style="font-size:22px;">${f.type==='application/pdf'?'📄':'🖼️'}</div>
+      <div class="u-font-size-22px">${f.type==='application/pdf'?'📄':'🖼️'}</div>
       <div class="fi"><div class="fn">${escapeHtml(f.name)}</div><div class="fs">${(f.size/1024/1024).toFixed(2)} MB</div></div>
-      <button onclick="docRemoveFile()">Remove</button>
+      <button data-onclick="docRemoveFile()">Remove</button>
     </div>
     ${f.dataUrl ? `<img class="doc-preview-img" src="${f.dataUrl}" alt="Document preview">` : ''}
-    <div class="auth-note" style="margin-top:10px;">Preparing to read this document…</div>
+    <div class="auth-note u-margin-top-10px">Preparing to read this document…</div>
     `}
   </main>`;
 }
@@ -160,8 +160,8 @@ function renderOcrAnalyzing(){
   <main>
     <div class="ocr-progress-wrap">
       <div class="ocr-progress-label" id="ocrPhaseLabel">${escapeHtml(docState.ocrPhaseLabel||'Reading document…')}</div>
-      <div class="ocr-progress-track"><div class="ocr-progress-bar" id="ocrProgressBar" style="width:${docState.ocrProgress||0}%;"></div></div>
-      <div class="auth-note" style="margin-top:14px;text-align:center;">Larger or lower-quality images can take longer to read.</div>
+      <div class="ocr-progress-track"><div class="ocr-progress-bar" id="ocrProgressBar" data-w="${docState.ocrProgress||0}"></div></div>
+      <div class="auth-note u-margin-top-14px-text-align-center">Larger or lower-quality images can take longer to read.</div>
     </div>
   </main>`;
 }
@@ -171,26 +171,26 @@ function renderDocOcrFailedScreen(r){
   ${docHeader('Unable to Read Document','', "openVerifyDocument()")}
   <main>
     <div class="assess-banner assess-mute">
-      <div class="assess-icon" style="color:var(--mute)">–</div>
+      <div class="assess-icon u-color-var-mute">–</div>
       <div class="assess-title">UNABLE TO VERIFY</div>
       <div class="assess-sub">${escapeHtml(r.message||'We could not extract enough readable information from this document.')}</div>
     </div>
-    <div class="doc-options" style="margin-top:18px;grid-template-columns:1fr;gap:10px;">
-      <button class="btn btn-primary btn-block" onclick="docPickMethod('camera')">Retake Photo</button>
-      <button class="btn btn-outline btn-block" onclick="docPickMethod('upload')">Upload Another Image</button>
+    <div class="doc-options u-margin-top-18px-grid-template-columns-a41e4">
+      <button class="btn btn-primary btn-block" data-onclick="docPickMethod('camera')">Retake Photo</button>
+      <button class="btn btn-outline btn-block" data-onclick="docPickMethod('upload')">Upload Another Image</button>
     </div>
-    <div class="auth-note" style="margin-top:14px;text-align:center;">Can't provide a readable document? <a href="javascript:void(0)" onclick="docPickMethod('manual')">Enter details manually instead</a>.</div>
+    <div class="auth-note u-margin-top-14px-text-align-center">Can't provide a readable document? <a href="javascript:void(0)" data-onclick="docPickMethod('manual')">Enter details manually instead</a>.</div>
   </main>`;
 }
 
 function autoFieldRow(label, field){
-  if(!field) return `<div class="check-item"><span class="mark" style="color:var(--mute)">–</span><span>${label}: not checked</span></div>`;
-  if(field.conflict) return `<div class="check-item"><span class="mark" style="color:var(--bad)">⚠</span><span>${label}: conflicting values found — ${field.values.map(escapeHtml).join(' vs ')}</span></div>`;
+  if(!field) return `<div class="check-item"><span class="mark u-color-var-mute">–</span><span>${label}: not checked</span></div>`;
+  if(field.conflict) return `<div class="check-item"><span class="mark u-color-var-bad">⚠</span><span>${label}: conflicting values found — ${field.values.map(x=>escapeHtml(label==='CNIC' ? maskCnic(x.replace(/[^\d]/g,'')) : x)).join(' vs ')}</span></div>`;
   if(field.found){
     const shown = label==='CNIC' ? maskCnic(field.value) : field.display;
-    return `<div class="check-item"><span class="mark" style="color:var(--ok)">✓</span><span>${label}: ${escapeHtml(shown)} <em style="opacity:.65;">(automatically extracted)</em></span></div>`;
+    return `<div class="check-item"><span class="mark u-color-var-ok">✓</span><span>${label}: ${escapeHtml(shown)} <em class="u-opacity-65">(automatically extracted)</em></span></div>`;
   }
-  return `<div class="check-item"><span class="mark" style="color:var(--warn);">⚠</span><span>${label}: not detected</span></div>`;
+  return `<div class="check-item"><span class="mark u-color-var-warn">⚠</span><span>${label}: not detected</span></div>`;
 }
 
 function renderAutoDocResult(r){
@@ -214,36 +214,36 @@ function renderAutoDocResult(r){
     </div>
 
     <div class="assess-banner assess-${meta.tone}">
-      <div class="assess-icon" style="color:var(--${meta.tone})">${meta.icon}</div>
+      <div class="assess-icon tone-${meta.tone}">${meta.icon}</div>
       <div class="assess-title">${meta.label}</div>
       ${r.reasons && r.reasons.length ? `<div class="assess-sub">${escapeHtml(r.reasons[0])}</div>` : `<div class="assess-sub">Assessment based on available checks</div>`}
     </div>
 
     ${r.reasons && r.reasons.length ? `<div class="section-title">Issues Found</div>
-    <div class="vcat">${r.reasons.map(x=>`<div class="check-item"><span class="mark" style="color:var(--warn);">⚠</span><span>${escapeHtml(x)}</span></div>`).join('')}</div>` : ''}
+    <div class="vcat">${r.reasons.map(x=>`<div class="check-item"><span class="mark u-color-var-warn">⚠</span><span>${escapeHtml(x)}</span></div>`).join('')}</div>` : ''}
 
     <div class="section-title">Checks Performed</div>
-    <div class="vcat">${r.checks.map(c=>`<div class="check-item"><span class="mark" style="color:${c.ok===true?'var(--ok)':c.ok===false?'var(--bad)':'var(--mute)'}">${c.ok===true?'✓':c.ok===false?'⚠':'–'}</span><span>${escapeHtml(c.text)}</span></div>`).join('')}</div>
+    <div class="vcat">${r.checks.map(c=>`<div class="check-item"><span class="mark ${c.ok===true?'tone-ok':c.ok===false?'tone-bad':'tone-mute'}">${c.ok===true?'✓':c.ok===false?'⚠':'–'}</span><span>${escapeHtml(c.text)}</span></div>`).join('')}</div>
 
     ${matchedProperty ? `
     <div class="section-title">Possible Matching Property</div>
-    <div class="vprop" ${isDemoRec?'':`style="cursor:pointer;" onclick="nav('detail','${matchedProperty.id}')"`}>
+    <div class="auth-note">Shown only as the record this document was compared with. The record's owner is not displayed, and a match here is not a confirmed link between the document and the property.</div>
+    <div class="vprop ${isDemoRec?'':'u-cursor-pointer'}" ${isDemoRec?'':`data-onclick="nav('detail','${matchedProperty.id}')"`}>
       <div class="thumb"></div>
       <div>
         <div class="t">${escapeHtml(matchedProperty.title)}</div>
         <div class="l">${escapeHtml(matchedProperty.area)} · ${escapeHtml(matchedProperty.plot)}</div>
-        <div class="l">Owner on record: ${escapeHtml(matchedProperty.owner)}</div>
       </div>
     </div>
-    ${isDemoRec?'<div class="auth-note">This is a fictional demo record used for testing.</div>':`<div class="doc-options" style="margin-top:10px;grid-template-columns:1fr 1fr;gap:10px;">
-      <button class="btn btn-outline btn-block" style="margin-top:0;" onclick="nav('detail','${matchedProperty.id}')">View Property</button>
-      <button class="btn btn-primary btn-block" style="margin-top:0;" onclick="nav('verify','${matchedProperty.id}')">Verify This Property</button>
+    ${isDemoRec?'<div class="auth-note">This is a fictional demo record used for testing.</div>':`<div class="doc-options u-margin-top-10px-grid-template-columns-22d3b">
+      <button class="btn btn-outline btn-block u-margin-top-0" data-onclick="nav('detail','${matchedProperty.id}')">View Property</button>
+      <button class="btn btn-primary btn-block u-margin-top-0" data-onclick="nav('verify','${matchedProperty.id}')">Verify This Property</button>
     </div>`}` : ''}
 
     <div class="section-title">Limitations</div>
-    <div class="vcat">${(r.limitations||[]).map(x=>`<div class="check-item"><span class="mark" style="color:var(--mute)">–</span><span>${escapeHtml(x)}</span></div>`).join('')}</div>
+    <div class="vcat">${(r.limitations||[]).map(x=>`<div class="check-item"><span class="mark u-color-var-mute">–</span><span>${escapeHtml(x)}</span></div>`).join('')}</div>
 
-    <button class="btn btn-outline btn-block" style="margin-top:16px;" onclick="openVerifyDocument()">Check Another Document</button>
+    <button class="btn btn-outline btn-block u-margin-top-16px" data-onclick="openVerifyDocument()">Check Another Document</button>
   </main>
   ${docState.showNotVerifiedModal ? renderNotVerifiedModal(r, meta) : ''}
   `;
@@ -251,15 +251,15 @@ function renderAutoDocResult(r){
 
 function renderNotVerifiedModal(r, meta){
   return `
-  <div class="modal-overlay" onclick="closeNotVerifiedModal(event)">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-icon" style="color:var(--bad)">${meta.icon}</div>
+  <div class="modal-overlay" data-onclick="closeNotVerifiedModal(event)">
+    <div class="modal-card" data-onclick="stopPropagation()">
+      <div class="modal-icon u-color-var-bad">${meta.icon}</div>
       <div class="modal-title">${meta.label}</div>
       <div class="modal-body">${(r.reasons && r.reasons.length) ? r.reasons.map(x=>`<p>${escapeHtml(x)}</p>`).join('') : '<p>We could not verify this document using the available information.</p>'}</div>
       <div class="modal-actions">
-        <button class="btn btn-outline" onclick="docPickMethod('upload')">Try Another Document</button>
-        <button class="btn btn-outline" onclick="closeNotVerifiedModal()">View Details</button>
-        <button class="btn btn-primary" onclick="closeNotVerifiedModal()">Close</button>
+        <button class="btn btn-outline" data-onclick="docPickMethod('upload')">Try Another Document</button>
+        <button class="btn btn-outline" data-onclick="closeNotVerifiedModal()">View Details</button>
+        <button class="btn btn-primary" data-onclick="closeNotVerifiedModal()">Close</button>
       </div>
     </div>
   </div>`;
@@ -275,8 +275,8 @@ function renderDocManualForm(){
     <div class="disclaimer">No document file will be analyzed here. This method can check the entered information for completeness, internal consistency, and matches against available property records — it cannot inspect the document's visual or file characteristics.</div>
     <div class="section-title">Document Information</div>
     ${docFieldsFormHtml(fieldsForType)}
-    ${docState.formError?`<div class="auth-note" style="color:var(--bad);">${docState.formError}</div>`:''}
-    <button class="btn btn-primary btn-block" onclick="docStartManualCheck()">Check Details</button>
+    ${docState.formError?`<div class="auth-note u-color-var-bad">${docState.formError}</div>`:''}
+    <button class="btn btn-primary btn-block" data-onclick="docStartManualCheck()">Check Details</button>
   </main>`;
 }
 
@@ -300,7 +300,7 @@ function renderDocResult(){
   ${docHeader('Document Result', r.docType, backAction)}
   <main>
     <div class="vprop">
-      <div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:22px;">${r.hasFile ? (r.fileMeta && r.fileMeta.type==='application/pdf'?'📄':'🖼️') : '✍️'}</div>
+      <div class="thumb u-display-flex-align-items-center-justif-91cb2">${r.hasFile ? (r.fileMeta && r.fileMeta.type==='application/pdf'?'📄':'🖼️') : '✍️'}</div>
       <div>
         <div class="t">${r.docType}</div>
         <div class="l">${r.method==='upload' ? 'Checked via document upload' : 'Checked via manual entry'}</div>
@@ -309,17 +309,17 @@ function renderDocResult(){
     </div>
 
     <div class="assess-banner assess-${meta.tone}">
-      <div class="assess-icon" style="color:var(--${meta.tone})">${meta.icon}</div>
+      <div class="assess-icon tone-${meta.tone}">${meta.icon}</div>
       <div class="assess-title">${meta.label}</div>
       <div class="assess-sub">${meta.blurb}</div>
-      <div class="assess-sub" style="margin-top:6px;font-style:italic;">Assessment based on available checks</div>
+      <div class="assess-sub u-margin-top-6px-font-style-italic">Assessment based on available checks</div>
     </div>
 
     ${r.reasons.length ? `<div class="section-title">Issues Found</div>
-    <div class="vcat">${r.reasons.map(x=>`<div class="check-item"><span class="mark" style="color:var(--warn);">⚠</span><span>${x}</span></div>`).join('')}</div>` : ''}
+    <div class="vcat">${r.reasons.map(x=>`<div class="check-item"><span class="mark u-color-var-warn">⚠</span><span>${escapeHtml(x)}</span></div>`).join('')}</div>` : ''}
 
     <div class="section-title">Checks Performed</div>
-    <div class="vcat">${r.checks.map(c=>`<div class="check-item"><span class="mark" style="color:${c.ok===true?'var(--ok)':c.ok===false?'var(--bad)':'var(--mute)'}">${c.ok===true?'✓':c.ok===false?'⚠':'–'}</span><span>${c.text}</span></div>`).join('')}</div>
+    <div class="vcat">${r.checks.map(c=>`<div class="check-item"><span class="mark ${c.ok===true?'tone-ok':c.ok===false?'tone-bad':'tone-mute'}">${c.ok===true?'✓':c.ok===false?'⚠':'–'}</span><span>${c.text}</span></div>`).join('')}</div>
 
     ${matchedProperty ? `
     <div class="section-title">Possible Matching Property</div>
@@ -328,22 +328,21 @@ function renderDocResult(){
       <div>
         <div class="t">${matchedProperty.title}</div>
         <div class="l">${matchedProperty.area} · ${matchedProperty.plot}</div>
-        <div class="l">Owner on record: ${matchedProperty.owner}</div>
       </div>
     </div>
     <div class="action-row">
-      <button class="btn btn-outline" onclick="nav('detail','${matchedProperty.id}')">View Property</button>
-      <button class="btn btn-primary" onclick="nav('verify','${matchedProperty.id}')">Verify This Property</button>
+      <button class="btn btn-outline" data-onclick="nav('detail','${matchedProperty.id}')">View Property</button>
+      <button class="btn btn-primary" data-onclick="nav('verify','${matchedProperty.id}')">Verify This Property</button>
     </div>
     <div class="auth-note">This is a possible match based on shared details, not a confirmed link between this document and the property.</div>
     ` : ''}
 
     <div class="section-title">Limitations</div>
-    <div class="vcat">${r.limitations.map(x=>`<div class="check-item"><span class="mark" style="color:var(--mute);">–</span><span>${x}</span></div>`).join('')}</div>
+    <div class="vcat">${r.limitations.map(x=>`<div class="check-item"><span class="mark u-color-var-mute">–</span><span>${x}</span></div>`).join('')}</div>
 
     <div class="action-row">
-      <button class="btn btn-outline" onclick="docGoStep('history')">My Document Checks</button>
-      <button class="btn btn-primary" onclick="openVerifyDocument()">Check Another Document</button>
+      <button class="btn btn-outline" data-onclick="docGoStep('history')">My Document Checks</button>
+      <button class="btn btn-primary" data-onclick="openVerifyDocument()">Check Another Document</button>
     </div>
   </main>`;
 }
@@ -352,16 +351,16 @@ function renderDocHistoryList(){
   const rows = docHistory.map((r,i)=>{
     const meta = DOC_STATUS_META[r.status];
     const dateStr = new Date(r.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    return `<div class="vprop" style="margin-bottom:10px;">
-      <div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:20px;">${r.hasFile?'📄':'✍️'}</div>
-      <div style="flex:1;min-width:0;">
+    return `<div class="vprop u-margin-bottom-10px">
+      <div class="thumb u-display-flex-align-items-center-justif-54d19">${r.hasFile?'📄':'✍️'}</div>
+      <div class="u-flex-1-min-width-0">
         <div class="t">${r.docType}</div>
         <div class="l">${dateStr} · ${r.method==='upload'?'Uploaded':'Manual entry'}</div>
-        <span class="status-badge ${meta.badge}" style="margin-top:6px;">${meta.icon} ${meta.label}</span>
+        <span class="status-badge ${meta.badge} u-margin-top-6px">${meta.icon} ${meta.label}</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-        <button class="btn btn-outline" style="padding:7px 10px;font-size:11px;" onclick="docViewHistory(${i})">View Result</button>
-        <button class="btn btn-outline" style="padding:7px 10px;font-size:11px;color:var(--bad);border-color:var(--bad);" onclick="docDeleteHistory(${i})">Delete</button>
+      <div class="u-display-flex-flex-direction-column-gap-2bfd9">
+        <button class="btn btn-outline u-padding-7px-10px-font-size-11px" data-onclick="docViewHistory(${i})">View Result</button>
+        <button class="btn btn-outline u-padding-7px-10px-font-size-11px-color-80d0c" data-onclick="docDeleteHistory(${i})">Delete</button>
       </div>
     </div>`;
   }).join('') || `<div class="empty">No document checks yet. Upload a document or enter details manually to get started.</div>`;

@@ -1,0 +1,8 @@
+# Deployment (Vercel + PostgreSQL)
+Status: configuration is written; **a production deployment has not been verified from the build sandbox**.
+1. Set environment variables in Vercel (names and defaults: `.env.example`). Required in production: `DATABASE_URL` (Postgres), `ADMIN_001_PASSWORD` (strong), `IP_HASH_SALT` (long random). Recommended: `UPSTASH_REDIS_REST_URL/TOKEN` (shared rate limits; without them counters are per instance). Optional: `GOOGLE_CLIENT_ID`, `ADMIN_EMAILS`, `RESEND_API_KEY`, `MAIL_FROM`, `APP_BASE_URL`.
+2. Keep `MESSAGE_RETENTION_DAYS=0` until the owner approves retention periods.
+3. Migrations in `backend/db/migrations/` run automatically on first use. **Run the test suite against a disposable Postgres first** (`PostgresDatabase` has never been executed), particularly `test_listings_retention`, `test_moderation_messaging`, `test_listing_lifecycle`.
+4. Install deps with `python scripts/install_deps.py`; pin the `PIN ME` ranges in `pyproject.toml` first (`docs/DEPENDENCIES.md`).
+5. After deploy, check cookies are `__Host-` prefixed, CSP headers, and the `/admin` and `/nice-try` flows; run Lighthouse and a ZAP scan only against your own test deployment.
+6. Property photos (`public/assets/Property Images`, 51 files, about 96 MB) and demo documents (`public/assets/samples`, 57 files, about 77 MB) are included (about 175 MB together, unoptimised; first added in Session 22b from `public.zip`). Check your host's deployment size limits; resizing to WebP is the first optimisation (see KNOWN_ISSUES). The Session 22b notes say a missing photo makes the cards fall back to a solid brand colour (not re-verified in this merge).

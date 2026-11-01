@@ -15,10 +15,10 @@ export const DOC_TYPES = ['Sale Deed','Lease Deed','Transfer Order','Allotment L
 export const DOC_FIELD_DEFS = {
   documentNumber:{label:'Document Number', ph:'e.g. SD-2026-0182'},
   date:{label:'Date', type:'date'},
-  ownerName:{label:'Owner Name', ph:'e.g. Ahmed Ali'},
+  ownerName:{label:'Owner Name', ph:'e.g. Full name as written on the document'},
   sellerName:{label:'Seller Name', ph:''},
   buyerName:{label:'Buyer Name', ph:''},
-  cnic:{label:'CNIC / Reference Number', ph:'e.g. 42101-1234567-1'},
+  cnic:{label:'CNIC / Reference Number', ph:'e.g. 00000-0000000-0'},
   plotNumber:{label:'Plot Number', ph:'e.g. 34-C'},
   surveyNumber:{label:'Survey Number', ph:''},
   propertyAddress:{label:'Property Address', ph:''},

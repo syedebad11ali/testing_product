@@ -1,0 +1,7 @@
+{
+  "dest": "public/assets/vendor",
+  "assets": [
+    {"name": "pdfjs-dist", "version": "3.11.174", "url": "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js", "path": "pdfjs/pdf.min.js"},
+    {"name": "pdfjs-dist worker", "version": "3.11.174", "url": "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js", "path": "pdfjs/pdf.worker.min.js"}
+  ]
+}

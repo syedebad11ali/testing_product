@@ -57,3 +57,10 @@
 /* Empty */
 .empty{text-align:center;padding:30px 10px;color:var(--sub);font-size:13.5px;}
 
+
+/* saved-heart state (from the legacy styles.css) */
+.pcard .thumb .fav.saved{background:linear-gradient(135deg,var(--favorite-start),var(--favorite-end));color:#fff;}
+.pcard .thumb .fav:active{transform:scale(.92);}
+
+/* G5.2: short alert when a favorite could not be loaded / saved / removed */
+.fav-notice{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);max-width:min(92vw,420px);padding:10px 16px;border-radius:10px;background:#1f2937;color:#fff;font-size:.85rem;line-height:1.35;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:1200;}

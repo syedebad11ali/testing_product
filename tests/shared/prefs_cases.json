@@ -1,0 +1,150 @@
+[
+ {
+  "raw": {
+   "theme": "dark",
+   "lang": "ur",
+   "area": " Gulshan-e-Iqbal "
+  },
+  "expected": {
+   "theme": "dark",
+   "lang": "ur",
+   "area": "gulshan-e-iqbal"
+  }
+ },
+ {
+  "raw": {
+   "area": "Gulshan, Karachi <b>"
+  },
+  "expected": {}
+ },
+ {
+  "raw": {
+   "theme": "neon"
+  },
+  "expected": {}
+ },
+ {
+  "raw": {
+   "min_price": -5,
+   "max_price": 1000000000000000
+  },
+  "expected": {
+   "min_price": 0,
+   "max_price": 10000000000
+  }
+ },
+ {
+  "raw": {
+   "min_price": "100",
+   "max_price": true
+  },
+  "expected": {}
+ },
+ {
+  "raw": {
+   "recent": [
+    "DEMO-KPT-8103",
+    "<script>",
+    "DEMO-KPT-8103",
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   ]
+  },
+  "expected": {
+   "recent": [
+    "DEMO-KPT-8103"
+   ]
+  }
+ },
+ {
+  "raw": {
+   "dismissed": [
+    "intro",
+    "free text here",
+    "promo"
+   ]
+  },
+  "expected": {
+   "dismissed": [
+    "intro",
+    "promo"
+   ]
+  }
+ },
+ {
+  "raw": {
+   "email": "a@b.com",
+   "name": "Sara",
+   "token": "abc"
+  },
+  "expected": {}
+ },
+ {
+  "raw": "not a dict",
+  "expected": {}
+ },
+ {
+  "raw": {
+   "area": "gulshan e iqbal",
+   "ptype": "house",
+   "sort": "price_asc"
+  },
+  "expected": {
+   "area": "gulshan e iqbal",
+   "ptype": "house",
+   "sort": "price_asc"
+  }
+ },
+ {
+  "raw": {
+   "theme": "light",
+   "lang": "xx",
+   "sort": "newest",
+   "saved": [
+    "A1",
+    "B2"
+   ],
+   "compare": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e"
+   ]
+  },
+  "expected": {
+   "theme": "light",
+   "sort": "newest",
+   "saved": [
+    "A1",
+    "B2"
+   ],
+   "compare": [
+    "a",
+    "b",
+    "c",
+    "d"
+   ]
+  }
+ },
+ {
+  "raw": {
+   "min_price": 12.9,
+   "max_price": 0
+  },
+  "expected": {
+   "min_price": 12,
+   "max_price": 0
+  }
+ },
+ {
+  "raw": null,
+  "expected": {}
+ },
+ {
+  "raw": [
+   1,
+   2
+  ],
+  "expected": {}
+ }
+]

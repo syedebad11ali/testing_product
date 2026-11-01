@@ -1,7 +1,32 @@
 /* layout.css — Page header and main content area. Load order matters: see index.html. */
+
+/* HERO THEME COLORS
+   Registered as <color> so the gradient can animate between light and dark.
+   Light = navy hero. Dark = teal hero (#12796B -> #1E9A82, from --teal-700/600/500). */
+@property --hero-glow-a{syntax:"<color>";inherits:true;initial-value:#0b4a63;}
+@property --hero-glow-b{syntax:"<color>";inherits:true;initial-value:#0a4a73;}
+@property --hero-c{syntax:"<color>";inherits:true;initial-value:#06283d;}
+@property --hero-d{syntax:"<color>";inherits:true;initial-value:#072a40;}
+@property --hero-e{syntax:"<color>";inherits:true;initial-value:#05202f;}
+
+:root{
+  --hero-glow-a:#0b4a63; --hero-glow-b:#0a4a73;
+  --hero-c:#06283d; --hero-d:#072a40; --hero-e:#05202f;
+  --hero-eyebrow:#1fc7a0; --hero-focus:#1fc7a0;
+  --chip-text:#d9f5ee; --chip-border:rgba(31,199,160,.55); --chip-bg:rgba(31,199,160,.08);
+}
+:root[data-theme="dark"]{
+  --hero-glow-a:var(--teal-500);   /* #1E9A82 */
+  --hero-glow-b:#2ab89e;           /* lighter teal for the corner glow */
+  --hero-c:var(--teal-700);        /* #12796B */
+  --hero-d:var(--teal-600);        /* #178A78 */
+  --hero-e:var(--teal-500);        /* #1E9A82 */
+  --hero-eyebrow:#eafff8; --hero-focus:#fff;
+  --chip-text:#fff; --chip-border:rgba(255,255,255,.5); --chip-bg:rgba(255,255,255,.12);
+}
+
 /* HEADER */
 .header{
-  background:linear-gradient(135deg,var(--brand-start),var(--brand-end));
   color:#fff; padding:16px 20px 28px; border-radius:0 0 30px 30px;
   padding-top:calc(16px + env(safe-area-inset-top,0px));
 }
@@ -21,3 +46,42 @@ main{padding:18px 16px 100px;max-width:1200px;margin:0 auto;}
 .section-title{font-size:17px;font-weight:700;margin:22px 0 12px;color:var(--text);}
 .section-sub{font-size:12.5px;color:var(--sub);margin-top:-8px;margin-bottom:12px;}
 
+
+/* account slot in the top nav */
+.auth-slot{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:10px;font-size:.85rem;font-weight:700}
+.auth-slot a,.auth-logout{color:var(--brand-text);text-decoration:none;background:none;border:0;font:inherit;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
+.auth-slot .auth-name,.auth-slot a:not(.auth-pill),.auth-slot .auth-logout{min-height:44px;padding:3px 14px;border:2px solid var(--brand-text);border-radius:999px}
+.auth-slot .auth-name{display:inline-flex;align-items:center;gap:7px}
+.auth-slot .auth-name svg{width:16px;height:16px;flex-shrink:0}
+:root[data-theme="dark"] .auth-slot .auth-name,
+:root[data-theme="dark"] .auth-slot a,
+:root[data-theme="dark"] .auth-slot .auth-logout{border-color:var(--teal-500)}
+:root[data-theme="dark"] .auth-slot a.auth-pill.solid{
+  background:var(--hero-d);
+  color:#fff
+}
+
+/* --- Session 22 polish: one clear home hero, pill auth buttons ------------------------------------------------ */
+.header{background:radial-gradient(700px 320px at 12% 0%,var(--hero-glow-a) 0,transparent 62%),radial-gradient(600px 300px at 100% 100%,var(--hero-glow-b) 0,transparent 60%),linear-gradient(160deg,var(--hero-c),var(--hero-d) 60%,var(--hero-e));
+  max-width:1320px;margin:0 auto;padding:clamp(22px,4vw,44px) clamp(18px,4vw,48px) clamp(22px,3vw,34px)}
+.brand-block{margin-top:0;max-width:720px}
+.eyebrow-home{color:var(--hero-eyebrow);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.header .brand{font-size:clamp(26px,4.4vw,44px);font-weight:700;line-height:1.12}
+.header .tagline{opacity:.9;font-size:clamp(13.5px,1.5vw,16px);margin-top:10px;line-height:1.5;max-width:560px}
+.header .search-bar{margin-top:22px;max-width:720px;min-height:52px;border-radius:999px;padding:0 20px;box-shadow:0 6px 22px rgba(0,0,0,.22)}
+.header .search-bar:focus-within{outline:3px solid var(--hero-focus);outline-offset:2px}
+.trust-chips{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0}
+.trust-chips li{font-size:12px;font-weight:600;color:var(--chip-text);border:1px solid var(--chip-border);border-radius:999px;padding:5px 12px;background:var(--chip-bg)}
+.auth-slot{flex-shrink:0;white-space:nowrap}
+.auth-slot a.auth-pill{min-height:38px;padding:0 16px;border-radius:999px;border:1.5px solid var(--brand-text);font-weight:700;font-size:.82rem}
+.auth-slot a.auth-pill.solid{background:var(--brand-text);color:var(--surface)}
+.auth-slot a.auth-pill:focus-visible{outline:3px solid #1fc7a0;outline-offset:2px}
+@media (max-width:640px){
+  .topnav-tag{display:none}
+  .topnav-inner{gap:8px;padding:8px 12px}
+  .auth-slot{margin-right:0;gap:6px}
+  .auth-slot a.auth-pill{padding:0 11px;min-height:36px;font-size:.76rem}
+  .auth-slot a.auth-pill.solid{display:none}
+  .topnav-inner>.auth-slot{display:none}
+}
+.topnav-inner>.theme-toggle{margin-left:0}

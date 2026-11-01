@@ -1,12 +1,13 @@
 """POST /verification/check — compare a claimed owner name with the registered one.
 
-Returns only match / mismatch / unable_to_verify. TODO(phase 4): require a logged-in user.
+Returns only match / mismatch / unable_to_verify. Requires a logged-in user (session cookie + CSRF token).
 """
 from __future__ import annotations
 
 from flask import Blueprint, current_app, jsonify, request
 
 from backend.errors import ApiError
+from backend.security.guards import login_required
 
 bp = Blueprint("verification", __name__)
 
@@ -22,6 +23,7 @@ def _text(data: dict, key: str, max_len: int) -> str:
 
 
 @bp.post("/verification/check")
+@login_required()
 def check():
     kpt = current_app.extensions["kpt"]
     kpt.verify_limiter.check(request.remote_addr or "unknown")

@@ -1,0 +1,26 @@
+# Line endings. This project is authored on Linux and runs CI on Linux; Git for Windows defaults to core.autocrlf=true,
+# which would rewrite text files to CRLF in a Windows clone. Anything that hashes file bytes (vendored libraries with SRI
+# in public/assets/vendor/, dataset and fixture checks) then fails. Keep text as LF everywhere, on every platform.
+* text=auto eol=lf
+
+# Vendored third-party files are integrity-pinned (SHA-256 / SRI): Git must never touch a single byte of them.
+public/assets/vendor/** -text
+
+# Binary files (a self-checking test, tests/backend/test_gitattributes.py, fails if a new binary type is not listed here).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.joblib binary
+*.xlsx binary
+*.pdf binary
+*.sqlite3 binary
+*.sqlite binary
+*.db binary
+*.zip binary
+*.wasm binary

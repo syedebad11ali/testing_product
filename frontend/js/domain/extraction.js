@@ -16,6 +16,8 @@
    instead of collapsing into a false conflict.
    ================================================================== */
 
+import { maskCnic } from './resultPrivacy.js';
+
   var MAX_VALUE_LEN = 90;
 
   // Words that show up in signature-block footers ("OWNER AUTHORITY REP
@@ -97,10 +99,20 @@
     return out;
   }
 
+  // ---- missing-value / placeholder handling (Phase B.1) -------------------
+  // A value such as \u2014, N/A, nil, none, unknown or TBD means "no information". It must never be treated as a detected
+  // value on the document, nor as a usable value on a record. (A run of zeros is NOT a placeholder: the synthetic fixtures use it.)
+  var PLACEHOLDER_RE = /^(?:[-\u2010-\u2015\u2212_.\u2026?*\/\\]+|n\s*\/?\s*a|n\.\s*a\.?|nil|none|null|nan|undefined|unknown|unk|tbd|tba|pending|blank|missing|unavailable|empty|not\s+(?:available|provided|applicable|stated|known|specified|mentioned|given|disclosed|yet\s+\w+)|no\s+(?:data|record|information|info|value|name|cnic|plot|survey|address)(?:\s+\w+)?|to\s+be\s+(?:determined|decided|announced|confirmed|filled|provided|advised)|under\s+(?:review|process))$/i;
+  function isMissingValue(v){
+    var s = (v === null || v === undefined) ? '' : String(v);
+    s = s.replace(/\s+/g,' ').replace(/^[\s:#()\[\]'\"]+|[\s:#()\[\]'\".,;]+$/g,'');
+    return !s || PLACEHOLDER_RE.test(s);
+  }
+
   // ---- per-value normalization / validation ------------------------------
 
   function normalizeCnicCandidate(raw){
-    if(!raw) return null;
+    if(!raw || isMissingValue(raw)) return null;
     var cleaned = raw.replace(/[Oo]/g,'0').replace(/[IiLl]/g,'1').replace(/[^\d\-]/g,'');
     var digits = cleaned.replace(/-/g,'');
     if(!/^\d{13}$/.test(digits)) return null;
@@ -108,7 +120,7 @@
   }
 
   function normalizePlotCandidate(raw){
-    if(!raw) return null;
+    if(!raw || isMissingValue(raw)) return null;
     var v = raw.trim();
     if(!v || v.length > 20) return null;
     if(!/[0-9]/.test(v)) return null;
@@ -119,7 +131,7 @@
   }
 
   function normalizeNameCandidate(raw){
-    if(!raw) return null;
+    if(!raw || isMissingValue(raw)) return null;
     var v = raw.trim().replace(/\s+/g,' ');
     if(!v || v.length > 60) return null;
     if(/^(cnic|nic|plot)/i.test(v)) return null;
@@ -132,7 +144,7 @@
   }
 
   function normalizeGenericCandidate(raw){
-    if(!raw) return null;
+    if(!raw || isMissingValue(raw)) return null;
     var v = raw.trim().replace(/\s+/g,' ');
     if(!v) return null;
     if(isStopwordOnly(v)) return null;
@@ -265,7 +277,40 @@
   function ocrConfusable(a,b){ return a!==b && confusionKey(a)===confusionKey(b); }
 
   function docNormalizeKey(s){ return (s||'').toString().toLowerCase().replace(/[^a-z0-9]/g,''); }
+  function editDistance(a, b){
+    var prev = [], cur, i, j;
+    for(j = 0; j <= b.length; j++) prev[j] = j;
+    for(i = 1; i <= a.length; i++){
+      cur = [i];
+      for(j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + (a.charAt(i-1) === b.charAt(j-1) ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  /* Under OCR, two names that differ by one character (or only by OCR-confusable characters) are not proof of a different person:
+     report them as uncertain (unable to verify), never as a proven mismatch and never as a match. Applies to the OCR lane only;
+     a PDF text layer is exact, so a difference there stays a mismatch. */
+  function ocrNameClose(a, b){
+    a = docNormalizeKey(a); b = docNormalizeKey(b);
+    if(!a || !b || a === b || Math.min(a.length, b.length) < 6) return false;
+    return confusionKey(a) === confusionKey(b) || editDistance(a, b) <= 1;
+  }
   function fuzzyContains(hay, needle){ hay=docNormalizeKey(hay); needle=docNormalizeKey(needle); return !!needle && hay.indexOf(needle)!==-1; }
+
+  /* Whole-token match. A record value such as "Plot 134-C, Street 12" is split on spaces/commas into tokens; the document
+     value must equal one token or a run of adjacent tokens (spacing and hyphens are ignored, so "34C" still equals "34-C").
+     Plain substring matching let a truncated or prefix value ("4-C", "34") match "34-C"/"134-C". */
+  function tokenRuns(value){
+    var toks=(value||'').toString().toLowerCase().split(/[\s,;]+/).map(function(t){ return t.replace(/[^a-z0-9]/g,''); }).filter(Boolean);
+    var runs=[];
+    for(var i=0;i<toks.length;i++){ var acc=''; for(var j=i;j<toks.length;j++){ acc+=toks[j]; runs.push(acc); } }
+    return runs;
+  }
+  function boundaryContains(recordValue, docValue){ var key=docNormalizeKey(docValue); return !!key && tokenRuns(recordValue).indexOf(key)!==-1; }
+
+  /* Candidate selection only: an OCR-confusable plot (e.g. "34-\u20ac" for "34-C") may still pick the record; compareToProperty then
+     reports it as "uncertain" (never as a match) when the text came from OCR. */
+  function confusableBoundary(recordValue, docValue){ var key=confusionKey(docValue); return !!key && tokenRuns(recordValue).map(confusionKey).indexOf(key)!==-1; }
 
   function matchProperty(extracted, properties){
     var plotKey = extracted.plotNumber.found && !extracted.plotNumber.conflict ? docNormalizeKey(extracted.plotNumber.display) : '';
@@ -276,12 +321,30 @@
       var score = 0;
       var pPlot = docNormalizeKey(p.plot), pOwner = docNormalizeKey(p.owner);
       var pCnic = p.cnic ? p.cnic.replace(/[^\d]/g,'') : '';
-      if(plotKey && pPlot.indexOf(plotKey)!==-1) score += 2;
+      if(plotKey && (boundaryContains(p.plot, extracted.plotNumber.display) || confusableBoundary(p.plot, extracted.plotNumber.display))) score += 2;
       if(nameKey && pOwner === nameKey) score += 2;
       if(cnicDigits && pCnic && pCnic === cnicDigits) score += 3;
       if(score > bestScore){ bestScore = score; best = p; }
     });
     return bestScore >= 2 ? {property:best, score:bestScore} : {property:null, score:bestScore};
+  }
+
+  // ---- area comparison (units) ----------------------------------------------------
+  // Areas are compared in square yards. A number with no recognised unit directly after it (or a unit not listed here, e.g. marla,
+  // kanal, gaz) is NOT comparable: it is never treated as a match and the field stays 'unknown' (-> unable to verify). Comparing bare
+  // numbers let "1 Acre" or "500 Sq. Meters" pass against a record of "500 Sq. Yards", and "600 Sq. Yards" against "4500 Sq. Ft.".
+  var AREA_UNITS = [
+    {re:/^\s*sq(?:uare)?\.?\s*(?:yards?|yds?)\b/i,                            toSqYd:1},
+    {re:/^\s*(?:sq(?:uare)?\.?\s*(?:feet|foot|ft)\b|sqft\b|sft\b)/i,           toSqYd:1/9},
+    {re:/^\s*(?:sq(?:uare)?\.?\s*(?:meters?|metres?|mtrs?|m)\b|sqm\b)/i,        toSqYd:1.19599005},
+    {re:/^\s*acres?\b/i,                                                       toSqYd:4840}
+  ];
+  function areaInSqYards(v){
+    var s = String(v === null || v === undefined ? '' : v), m = s.match(/\d[\d,]*(?:\.\d+)?/);
+    if(!m) return NaN;
+    var n = parseFloat(m[0].replace(/,/g,'')), rest = s.slice(m.index + m[0].length);
+    for(var i=0;i<AREA_UNITS.length;i++) if(AREA_UNITS[i].re.test(rest)) return n * AREA_UNITS[i].toSqYd;
+    return NaN;
   }
 
   // Compares extracted fields against ONE specific property record.
@@ -294,63 +357,68 @@
     var profile = extracted.profile || TYPE_PROFILES.other;
     var uses = function(f){ return profile.fields.indexOf(f) !== -1; };
 
+    /* Reasons and `details` never contain values from the record (owner, CNIC, plot, survey, address, size): a mismatch message
+       must not reveal what the record holds. A record value that is missing or a placeholder cannot be compared: the field stays 'unknown'. */
+    var usable = function(v){ return !isMissingValue(v); };
     if(uses('name')){
-      if(extracted.ownerName.conflict){ result.name='conflict'; result.details.name={extracted:extracted.ownerName.values, record:property.owner}; }
-      else if(extracted.ownerName.found){
+      if(extracted.ownerName.conflict){ result.name='conflict'; result.details.name={extracted:extracted.ownerName.values}; }
+      else if(extracted.ownerName.found && usable(property.owner)){
         var nm = docNormalizeKey(extracted.ownerName.display)===docNormalizeKey(property.owner);
-        result.name = nm?'match':'mismatch';
-        result.details.name = {extracted:extracted.ownerName.display, record:property.owner};
-        if(!nm) result.mismatches.push('Name in document ("'+extracted.ownerName.display+'") does not match the recorded owner ("'+property.owner+'").');
+        var nUnc = !nm && opts.ocr && ocrNameClose(extracted.ownerName.display, property.owner);
+        result.name = nm?'match':nUnc?'uncertain':'mismatch';
+        result.details.name = {extracted:extracted.ownerName.display};
+        if(nUnc) result.uncertain.push('The name read from the image is very close to, but not identical with, the name on record. OCR can misread characters, so it cannot be called a mismatch.');
+        else if(!nm) result.mismatches.push('The name in the document does not match the name on record for this property.');
       }
     }
     if(uses('cnic')){
       if(extracted.cnic.conflict){ result.cnic='conflict'; }
-      else if(extracted.cnic.found && property.cnic){
+      else if(extracted.cnic.found && usable(property.cnic) && property.cnic.replace(/[^\d]/g,'').length === 13){
         var cm = extracted.cnic.value === property.cnic.replace(/[^\d]/g,'');
         var cUnc = !cm && opts.ocr && ocrConfusable(extracted.cnic.value, property.cnic.replace(/[^\d]/g,''));
         result.cnic = cm?'match':cUnc?'uncertain':'mismatch';
-        result.details.cnic = {extracted:extracted.cnic.display, record:property.cnic};
-        if(cUnc) result.uncertain.push('CNIC read from the image ("'+extracted.cnic.display+'") differs from the record only in characters OCR commonly misreads, so it cannot be called a mismatch.');
+        result.details.cnic = {extracted:extracted.cnic.display};
+        if(cUnc) result.uncertain.push('CNIC read from the image ("'+maskCnic(extracted.cnic.value)+'") differs from the record only in characters OCR commonly misreads, so it cannot be called a mismatch.');
         else if(!cm) result.mismatches.push('CNIC in document does not match the CNIC on record for this property.');
       }
     }
     if(uses('plot')){
       if(extracted.plotNumber.conflict){ result.plot='conflict'; }
-      else if(extracted.plotNumber.found){
-        var pm = fuzzyContains(property.plot, extracted.plotNumber.display);
+      else if(extracted.plotNumber.found && usable(property.plot)){
+        var pm = boundaryContains(property.plot, extracted.plotNumber.display);
         var pUnc = !pm && opts.ocr && confusionKey(property.plot).indexOf(confusionKey(extracted.plotNumber.display))!==-1;
         result.plot = pm?'match':pUnc?'uncertain':'mismatch';
-        result.details.plot = {extracted:extracted.plotNumber.display, record:property.plot};
-        if(pUnc) result.uncertain.push('Plot number read from the image ("'+extracted.plotNumber.display+'") differs from the record ("'+property.plot+'") only in characters OCR commonly misreads, so it cannot be called a mismatch.');
-        else if(!pm) result.mismatches.push('Plot number in document ("'+extracted.plotNumber.display+'") does not match the recorded plot ("'+property.plot+'").');
+        result.details.plot = {extracted:extracted.plotNumber.display};
+        if(pUnc) result.uncertain.push('Plot number read from the image ("'+extracted.plotNumber.display+'") differs from the plot on record only in characters OCR commonly misreads, so it cannot be called a mismatch.');
+        else if(!pm) result.mismatches.push('Plot number in the document ("'+extracted.plotNumber.display+'") does not match the plot on record.');
       }
     }
-    if(uses('survey') && property.survey){
+    if(uses('survey') && usable(property.survey)){
       if(extracted.surveyNumber.conflict){ result.survey='conflict'; }
       else if(extracted.surveyNumber.found){
-        var sm = fuzzyContains(property.survey, extracted.surveyNumber.display);
+        var sm = boundaryContains(property.survey, extracted.surveyNumber.display);
         result.survey = sm?'match':'mismatch';
-        result.details.survey = {extracted:extracted.surveyNumber.display, record:property.survey};
-        if(!sm) result.mismatches.push('Survey number in document ("'+extracted.surveyNumber.display+'") does not match the recorded survey number ("'+property.survey+'").');
+        result.details.survey = {extracted:extracted.surveyNumber.display};
+        if(!sm) result.mismatches.push('Survey number in the document ("'+extracted.surveyNumber.display+'") does not match the survey number on record.');
       }
     }
-    if(uses('address') && property.address){
+    if(uses('address') && usable(property.address)){
       if(extracted.address.found){
         var exK = docNormalizeKey(extracted.address.display), rcK = docNormalizeKey(property.address);
         var am = exK.length >= rcK.length*0.8 && (exK.indexOf(rcK)!==-1 || rcK.indexOf(exK)!==-1);
         result.address = am?'match':'mismatch';
-        result.details.address = {extracted:extracted.address.display, record:property.address};
-        if(!am) result.mismatches.push('Property address in document ("'+extracted.address.display+'") does not match the recorded address ("'+property.address+'").');
+        result.details.address = {extracted:extracted.address.display};
+        if(!am) result.mismatches.push('The property address in the document does not match the address on record.');
       }
     }
-    if(uses('approvedArea') && property.size){
+    if(uses('approvedArea') && usable(property.size)){
       if(extracted.approvedArea.found){
-        var numOf = function(v){ var m=(v||'').match(/\d[\d,]*(?:\.\d+)?/); return m?parseFloat(m[0].replace(/,/g,'')):NaN; };
-        var recordNum = numOf(property.size), docNum = numOf(extracted.approvedArea.display);
-        var areaOk = isNaN(recordNum) || isNaN(docNum) ? true : docNum <= recordNum;
-        result.approvedArea = areaOk?'match':'mismatch';
-        result.details.approvedArea = {extracted:extracted.approvedArea.display, record:property.size};
-        if(!areaOk) result.mismatches.push('Approved area in document ("'+extracted.approvedArea.display+'") exceeds the recorded property size ("'+property.size+'").');
+        var recordNum = areaInSqYards(property.size), docNum = areaInSqYards(extracted.approvedArea.display);
+        var comparable = isFinite(recordNum) && isFinite(docNum);   // an unreadable number, or one without a known unit, is NOT evidence of a match
+        var areaOk = comparable ? docNum <= recordNum * (1 + 1e-9) : false;
+        result.approvedArea = !comparable ? 'unknown' : (areaOk?'match':'mismatch');
+        result.details.approvedArea = {extracted:extracted.approvedArea.display};
+        if(comparable && !areaOk) result.mismatches.push('The approved area in the document ("'+extracted.approvedArea.display+'") exceeds the property size on record.');
       }
     }
     if(uses('paymentStatus') && extracted.paymentStatus.found){
@@ -366,6 +434,56 @@
   // Shared decision rules (used by domain/documentVerification.js AND scripts/manifest-report.mjs so
   // the tests exercise the exact logic the app runs).
   var FIELD_KEY = {name:'ownerName', cnic:'cnic', plot:'plotNumber', survey:'surveyNumber', address:'address', approvedArea:'approvedArea', paymentStatus:'paymentStatus'};
+  var FIELD_LABEL = {name:'name', cnic:'CNIC', plot:'plot number', survey:'survey number', address:'address', approvedArea:'approved area'};
+
+  /* Property descriptors (plot, survey, address) describe the property whatever the document type. A document type only
+     REQUIRES some of them, but any that the document does state must still agree with the matched record, otherwise a
+     document whose owner/CNIC/plot were swapped to another record while its survey/address still describe the original
+     would be "verified" against the swapped-to record. Under OCR a disagreement on a non-required field is reported as
+     uncertain (never as a proven mismatch, and never as verified). */
+  var DESCRIPTORS = ['plot','survey','address'];
+  function crossCheckDescriptors(extraction, property, opts){
+    var out = {mismatches:[], uncertain:[]};
+    var profile = extraction.profile || TYPE_PROFILES.other;
+    var extra = DESCRIPTORS.filter(function(f){ return profile.fields.indexOf(f) === -1; });
+    if(!extra.length || !property) return out;
+    var widened = Object.assign({}, extraction, {profile: Object.assign({}, profile, {fields: extra})});
+    var c = compareToProperty(widened, property, opts);
+    extra.forEach(function(f){
+      if(c[f] !== 'mismatch') return;
+      var shown = c.details[f] ? c.details[f].extracted : '';
+      var msg = FIELD_LABEL[f].charAt(0).toUpperCase()+FIELD_LABEL[f].slice(1)+' in the document ("'+shown+'") differs from the matched record, although this document type does not normally require it. The document does not describe a single consistent property.';
+      if(opts && opts.ocr) out.uncertain.push(msg+' The text was read by OCR, so this is not treated as a proven mismatch.');
+      else out.mismatches.push(msg);
+    });
+    return out;
+  }
+
+  /* Other parties named in the document (attorney, buyer, ...) are not compared with the property owner, but when such a
+     party's CNIC is on record, the name given with it must be the name on record. Only a contradiction is reported: a CNIC
+     that is on no record proves nothing either way. The reason never reveals whom the CNIC is registered to. */
+  function crossCheckParties(extraction, records, opts){
+    var out = {mismatches:[], uncertain:[]};
+    var roles = extraction.allRoles || {}, names = roles.name || {}, cnics = roles.cnic || {};
+    var own = (extraction.profile || {}).nameRole;
+    Object.keys(names).forEach(function(role){
+      if(role === own) return;                                   // the main party is compared with the matched property
+      var n = names[role], c = cnics[role];
+      if(!n || !n.found || n.conflict || !c || !c.found || c.conflict || !c.value) return;
+      var rec = (records || []).filter(function(p){ return !isMissingValue(p.cnic) && p.cnic.replace(/[^\d]/g,'') === c.value; })[0];
+      if(!rec || isMissingValue(rec.owner)) return;
+      var a = docNormalizeKey(n.display), b = docNormalizeKey(rec.owner);
+      if(a === b) return;
+      var msg = 'The CNIC given for the '+role+' is registered on record under a different name than the name given for the '+role+'.';
+      if(opts && opts.ocr && (ocrConfusable(a, b) || ocrNameClose(a, b))) out.uncertain.push(msg+' The difference may be an OCR misread, so it cannot be called a mismatch.');
+      else out.mismatches.push(msg);
+    });
+    return out;
+  }
+
+  /* Result vocabulary (unchanged): verified | not_verified (proven contradiction) | unable_to_verify (inconclusive) |
+     suspicious (the document contradicts itself). "verified" needs EVERY required field to be found AND positively
+     compared with a record; missing, unreadable, uncompared or uncertain fields can never support it. */
   function decide(extraction, property, opts){
     opts = opts || {};
     var conflicts = ['ownerName','plotNumber','cnic','surveyNumber'].filter(function(f){ return extraction[f] && extraction[f].conflict; });
@@ -374,11 +492,35 @@
     var missing = profile.fields.filter(function(f){ if(f==='paymentStatus') return false; var k=FIELD_KEY[f]; return !extraction[k].found; });
     var anyFound = profile.fields.some(function(f){ return extraction[FIELD_KEY[f]].found; });
     if(!anyFound) return {status:'unable_to_verify', reasons:['No usable information could be extracted from the document.'], cmp:null};
+    if(!property) return {status:'unable_to_verify', reasons:['There is no property record to compare this document with.'], cmp:null};
     var cmp = compareToProperty(extraction, property, opts);
+    var extra = crossCheckDescriptors(extraction, property, opts);
+    var parties = crossCheckParties(extraction, opts.records, opts);
+    cmp.mismatches = cmp.mismatches.concat(extra.mismatches, parties.mismatches);
+    cmp.uncertain = cmp.uncertain.concat(extra.uncertain, parties.uncertain);
     if(cmp.mismatches.length) return {status:'not_verified', reasons:cmp.mismatches, cmp:cmp};
     if(missing.length) return {status:'unable_to_verify', reasons:['Required field(s) not detected: '+missing.join(', ')+'. Verification could not be completed.'], cmp:cmp};
+    var uncompared = profile.fields.filter(function(f){ return f!=='paymentStatus' && FIELD_LABEL[f] && cmp[f]==='unknown'; });
+    if(uncompared.length) return {status:'unable_to_verify', reasons:['Detected in the document but could not be compared with any available record: '+uncompared.map(function(f){ return FIELD_LABEL[f]; }).join(', ')+'. Verification could not be completed.'], cmp:cmp};
     if(cmp.uncertain.length) return {status:'unable_to_verify', reasons:cmp.uncertain, cmp:cmp};
     return {status:'verified', reasons:[], cmp:cmp};
+  }
+
+  /* Picks the record a document points to (free search, as the app does: there is no property context for an uploaded file) and
+     decides. Used by BOTH domain/documentVerification.js and scripts/manifest-report.mjs so the report measures what the app does.
+     earlyExit = the document could not be compared with any record at all (nothing readable, or no record matches). */
+  function verifyAgainstRecords(extraction, records, opts){
+    var o = Object.assign({}, opts || {}, {records: records});
+    var matched = matchProperty(extraction, records).property;
+    var conflicts = ['ownerName','plotNumber','cnic','surveyNumber'].filter(function(f){ return extraction[f] && extraction[f].conflict; });
+    if(!matched && !conflicts.length){
+      var anyFound = extraction.profile.fields.some(function(f){ return extraction[FIELD_KEY[f]].found; });
+      return anyFound
+        ? {status:'not_verified', reasons:['No property in the available records matches the information extracted from this document.'], cmp:null, matched:null, earlyExit:true, noMatch:true}
+        : {status:'unable_to_verify', reasons:['No usable information could be read from the document.'], cmp:null, matched:null, earlyExit:true, noMatch:false};
+    }
+    var d = decide(extraction, matched, o);
+    return {status:d.status, reasons:d.reasons, cmp:d.cmp, matched:matched, earlyExit:false, noMatch:false};
   }
 
   var Extraction = {
@@ -393,7 +535,10 @@
     matchProperty: matchProperty,
     compareToProperty: compareToProperty,
     decide: decide,
+    verifyAgainstRecords: verifyAgainstRecords,
+    areaInSqYards: areaInSqYards,
     docNormalizeKey: docNormalizeKey,
+    isMissingValue: isMissingValue,
     _internal: {normalizeCnicCandidate:normalizeCnicCandidate, normalizePlotCandidate:normalizePlotCandidate, normalizeNameCandidate:normalizeNameCandidate, isStopwordOnly:isStopwordOnly}
   };
 

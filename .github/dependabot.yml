@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+    groups:
+      # scikit-learn/numpy/pandas/scipy/joblib/threadpoolctl are locked to the serialised model: review by hand.
+      minor-and-patch:
+        update-types: [minor, patch]
+        exclude-patterns: [scikit-learn, numpy, pandas, scipy, joblib, threadpoolctl]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }

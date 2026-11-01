@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Messages · Karachi Property Trust</title>
+<script src="/js/theme-init.js"></script>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/messages.css">
+<link rel="stylesheet" href="/css/consent.css">
+</head>
+<body class="auth-page msg-page">
+<header class="admin-bar"><h1>Messages</h1><div><a href="/">Back to listings</a></div></header>
+<p class="auth-error" id="msg" role="alert" aria-live="assertive"></p>
+<p class="msg-safety">Private messages between you and the other person. Never share passwords or send money before verifying the property and the seller. Report anything suspicious.</p>
+<div class="msg-layout">
+  <section class="msg-inbox" aria-label="Conversations">
+    <ul id="inbox" class="msg-list"></ul>
+    <p id="inboxEmpty" class="msg-empty" hidden>No conversations yet. Open a property and choose "Chat with seller".</p>
+  </section>
+  <section class="msg-thread" id="thread" aria-label="Conversation" hidden>
+    <header class="msg-thread-head">
+      <button type="button" class="auth-link-btn msg-back" id="back">&larr; Inbox</button>
+      <div><b id="peer"></b><small id="subject"></small></div>
+      <div class="msg-tools"><button type="button" class="auth-link-btn" id="report">Report</button><button type="button" class="auth-link-btn" id="block">Block</button><button type="button" class="auth-link-btn" id="unblock" hidden>Unblock</button></div>
+    </header>
+    <div class="msg-scroll" id="scroll" tabindex="0" aria-live="polite">
+      <button type="button" class="auth-link-btn" id="older" hidden>Load older messages</button>
+      <ol id="messages" class="msg-bubbles"></ol>
+    </div>
+    <form id="composer" class="msg-composer" autocomplete="off">
+      <label class="msg-sr" for="body">Write a message</label>
+      <textarea id="body" rows="2" maxlength="2000" placeholder="Write a message (plain text, up to 2000 characters)"></textarea>
+      <button class="auth-btn" id="send" type="submit">Send</button>
+    </form>
+    <p class="auth-hint" id="state" role="status" aria-live="polite"></p>
+  </section>
+</div>
+<dialog id="dlg" class="msg-dialog" aria-labelledby="dlg-title" aria-describedby="dlg-text">
+  <form method="dialog" id="dlg-form">
+    <h2 id="dlg-title"></h2>
+    <p id="dlg-text"></p>
+    <div id="dlg-field" hidden>
+      <label for="dlg-input">Reason</label>
+      <textarea id="dlg-input" rows="3" maxlength="500" aria-describedby="dlg-err"></textarea>
+    </div>
+    <div id="dlg-target" hidden>
+      <label for="dlg-target-select">What are you reporting?</label>
+      <select id="dlg-target-select"></select>
+    </div>
+    <p class="auth-error" id="dlg-err" role="alert"></p>
+    <div class="msg-dialog-actions">
+      <button type="button" class="auth-link-btn" id="dlg-cancel">Cancel</button>
+      <button type="submit" class="auth-btn" id="dlg-ok">Confirm</button>
+    </div>
+  </form>
+</dialog>
+<script type="module" src="/js/messages-page.js"></script>
+<script type="module" src="/js/consent-banner.js"></script>
+</body>
+</html>

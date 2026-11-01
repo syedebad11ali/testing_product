@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#072a40">
+<title>Developer login · Karachi Property Trust</title>
+<link rel="preload" href="/assets/fonts/poppins-Regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/fonts/poppins-Bold.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/login.css">
+<link rel="stylesheet" href="/css/developer-login.css">
+<link rel="stylesheet" href="/css/consent.css">
+</head>
+<body class="login-page">
+<header class="nav">
+  <a class="brand" href="/">
+    <picture><source type="image/webp" srcset="/assets/images/kpt-logo-96.webp 1x, /assets/images/kpt-logo-192.webp 2x"><img src="/assets/images/kpt-logo-96.png" srcset="/assets/images/kpt-logo-192.png 2x" alt="" width="46" height="48"></picture>
+    <span><strong>Karachi Property Trust</strong><small>Verification &amp; Trust Management System</small></span>
+  </a>
+  <div class="navbtns"><a class="pill outline" href="/login">Back to login</a></div>
+</header>
+
+<main class="dev-main">
+  <section class="dev-card" aria-labelledby="dev-title">
+    <p class="eyebrow">ADMINISTRATORS ONLY</p>
+    <h1 id="dev-title">Developer login</h1>
+    <p class="lead">Enter your administrator username and password to open the admin dashboard.</p>
+    <form class="form" id="form-dev" novalidate>
+      <div class="field">
+        <label for="dev-id">Administrator username</label>
+        <div class="input"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 0114 0"/></svg>
+          <input id="dev-id" name="identifier" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Administrator username" maxlength="254" autofocus></div>
+      </div>
+      <div class="field">
+        <label for="dev-pw">Password</label>
+        <div class="input"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0110 0v3M6 11h12v9H6z"/></svg>
+          <input id="dev-pw" name="password" type="password" autocomplete="current-password" placeholder="Password" maxlength="1024"></div>
+      </div>
+      <p class="banner" role="alert" data-banner></p>
+      <button class="btn primary" type="submit"><span class="spin" aria-hidden="true" hidden></span><span data-label>Open admin dashboard</span></button>
+      <a class="btn ghost" href="/login">Back to login</a>
+      <p class="demo-note">Demo site with fictional data. <a href="/privacy">Privacy &amp; cookies</a></p>
+    </form>
+  </section>
+</main>
+<script type="module" src="/js/developer-login.js"></script>
+</body>
+</html>

@@ -15,14 +15,15 @@ export const LOGO_URL = 'assets/logo-icon.png';
 export const FAVICON_URL = 'assets/logo-icon-trim.png';
 export const SAMPLES_URL = 'assets/samples/';
 
-/* Keys must stay in sync with the inline theme bootstrap in index.html (STORAGE_KEYS.theme). */
+/* Browser storage keys (UI preferences live in the kpt_prefs cookie, see core/cookies.js). */
 export const STORAGE_KEYS = {
-  theme: 'kpt-theme',
   docHistory: 'kpt_doc_history',
+  favoriteProperties: 'kpt_favorite_properties',   // LEGACY (pre-G5.2 global favorites): only ever deleted, never read
   chat: 'kpt-property-assistant',
   bannerClosedAt: 'lastBannerClosedAt',
 };
 
-export const CHAT_STARTERS = ['Estimate a house price in DHA', 'Cheapest area for apartments?', 'Show plots under 3 crore in Malir'];
+export const CHAT_STARTERS = ['Prices in Gulshan', 'Show 3 plots under 3 crore', 'Compare DHA and Clifton', 'How does verification work?'];
+export const CHAT_FEEDBACK_URL = runtime.chatFeedbackUrl || '/api/v1/chat/feedback';
 export const BANNER_COOLDOWN_MS = 18000; // 15-20s cooldown after a manual dismiss
 export const PROMO_DELAY_MS = 2200;

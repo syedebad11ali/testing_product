@@ -1,0 +1,36 @@
+/* creators.css - header "Creators" credit menu. */
+.creators-menu{position:relative;flex-shrink:0;margin-left:8px;z-index:61}
+.account-menu{display:none;position:relative;flex-shrink:0;margin-left:0;z-index:61}
+.creators-menu summary{display:flex;align-items:center;gap:8px;min-height:44px;list-style:none;cursor:pointer;border:2px solid var(--brand-text);border-radius:999px;padding:3px 14px 3px 4px;background:var(--surface);color:var(--brand-text);font-size:.85rem;font-weight:700;user-select:none}
+.account-menu summary{display:flex;align-items:center;gap:8px;min-height:44px;list-style:none;cursor:pointer;border:2px solid var(--brand-text);border-radius:999px;padding:3px 14px 3px 4px;background:var(--surface);color:var(--brand-text);font-size:.85rem;font-weight:700;user-select:none}
+:root[data-theme="dark"] .creators-menu summary{border-color:var(--teal-500)}
+.account-menu summary{border-color:var(--brand-text)}
+:root[data-theme="dark"] .account-menu summary{border-color:var(--teal-500)}
+.creators-menu summary::-webkit-details-marker{display:none}
+.account-menu summary::-webkit-details-marker{display:none}
+.creators-menu summary::after{content:"";width:6px;height:6px;margin:0 0 3px 2px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .2s}
+.account-menu summary::after{content:"";width:6px;height:6px;margin:0 0 3px 2px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .2s}
+.creators-menu[open] summary::after{transform:rotate(225deg);margin-bottom:0}
+.account-menu[open] summary::after{transform:rotate(225deg);margin-bottom:0}
+.creators-menu summary:hover{background:var(--teal-100)}
+.account-menu summary:hover{background:var(--teal-100)}
+.creators-menu summary:focus-visible,.creators-dropdown a:focus-visible{outline:3px solid var(--teal-500);outline-offset:2px}
+.account-menu summary:focus-visible,.account-dropdown a:focus-visible,.account-dropdown button:focus-visible{outline:3px solid var(--teal-500);outline-offset:2px}
+.account-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:220px;padding:8px;display:grid;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(3,35,59,.18)}
+.account-dropdown .auth-slot{display:grid;gap:4px;margin:0;white-space:normal}
+.account-dropdown .auth-slot>*{display:flex;align-items:center;justify-content:flex-start;width:100%;box-sizing:border-box;min-height:44px;padding:4px 10px;border:0;border-radius:10px;background:transparent;color:var(--text);font:inherit;text-align:left;text-decoration:none}
+.account-dropdown .auth-slot>*:hover{background:var(--teal-100)}
+.account-dropdown .auth-slot .auth-name,.account-dropdown .auth-slot .auth-guest{font-weight:700}
+.account-dropdown .auth-slot a.auth-pill.solid{background:var(--teal-100);color:var(--text)}
+.account-dropdown .auth-slot .auth-logout{width:100%;text-align:left}
+.creators-icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--teal-100);border:1px solid var(--line);flex-shrink:0}
+.creators-icon svg{width:19px;height:19px;stroke:var(--brand-text);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.creators-dropdown{position:absolute;top:calc(100% + 8px);left:0;min-width:220px;padding:8px;display:grid;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(3,35,59,.18)}
+.creators-dropdown a{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 10px 4px 6px;border-radius:10px;color:var(--text);text-decoration:none;font-weight:600;font-size:.9rem}
+.creators-dropdown a:hover{background:var(--teal-100)}
+.creators-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0}
+@media (max-width:640px){.creators-label{display:none}.creators-menu summary,.account-menu summary{padding-right:10px}.creators-dropdown{position:fixed;top:64px;left:12px;right:12px;min-width:0}.topnav-inner>.creators-menu{margin-left: auto}}
+@media (max-width:640px){.account-menu{display:block}.account-dropdown{position:absolute;top:calc(100% + 8px);right:18px;left:-15px;width:220px;min-width:0;max-width:calc(100vw - 24px)}.account-dropdown .auth-slot a.auth-pill.solid{display:flex}}
+@media (max-width:280px){.creators-menu{display:none}.account-menu summary{gap:4px;padding-left:8px;padding-right:8px}.account-label{max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+@media (prefers-reduced-motion:reduce){.creators-menu summary::after{transition:none}}
+@media (prefers-reduced-motion:reduce){.account-menu summary::after{transition:none}}

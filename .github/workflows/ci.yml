@@ -1,0 +1,59 @@
+# CI (session 15; checked statically by tests/backend/test_ci_config.py in session 16). Written but NOT yet run on GitHub: the first run may need small fixes.
+# Actions are pinned to major tags; replace with commit SHAs when you adopt that policy (Dependabot can update them).
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python scripts/install_deps.py --dev
+      - run: npm run test:all
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python scripts/install_deps.py --dev
+      - run: python -m playwright install --with-deps chromium
+      - name: Playwright flows (local server, throwaway database)
+        run: |
+          for t in csp_test messaging_test cookies_test login_test smoke listings_test listing_lifecycle_test prefs_test admin_totp_test a11y_basics_test camera_upload_test guest_owner_privacy_test login_busy_test google_button_responsive_test property_images_test featured_test creators_test signup_single_click_test developer_login_test guest_entry_test guest_entry_failures_test g3_integration_test g4_chatbot_test widget_auth_test g4_widget_test g5_account_data_test; do
+            echo "== $t"; python tests/browser/$t.py || exit 1
+          done
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/install_deps.py --dev
+      - name: Static security scan
+        run: python -m bandit -r backend -q
+      - name: Known-vulnerability scan
+        run: python -m pip_audit

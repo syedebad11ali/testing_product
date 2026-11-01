@@ -1,0 +1,16 @@
+/* consent.css — banner shared by every page. Own colours so it reads on light, dark and the navy login page. */
+.consent-banner{position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483000;max-width:760px;margin:0 auto;padding:16px 18px;border-radius:14px;
+  background:#0f2236;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.45);display:grid;gap:12px;font:14px/1.5 Poppins,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.consent-banner{max-height:70vh;max-height:70dvh;overflow:auto;overscroll-behavior:contain}
+body.has-consent{padding-bottom:var(--consent-h,0px)}
+.consent-banner h2{margin:0 0 4px;font-size:15px}.consent-banner p{margin:0;color:#dbe7f3}
+.consent-banner a{color:#9be7e0;text-decoration:underline}
+.consent-details{margin-top:10px;display:grid;gap:8px}.consent-row{display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer}
+.consent-row input{width:20px;height:20px;margin-top:2px;flex:none}.consent-row strong{display:block}
+.consent-actions{display:flex;flex-wrap:wrap;gap:8px}
+.consent-btn{min-height:44px;padding:8px 18px;border-radius:999px;border:2px solid #fff;background:transparent;color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer}
+.consent-btn[data-choice="all"],.consent-btn[data-choice="reject"]{flex:1 1 150px}
+.consent-btn:hover{background:#fff;color:#0f2236}.consent-btn:focus-visible{outline:3px solid #9be7e0;outline-offset:2px}
+.consent-link{border-color:transparent;text-decoration:underline}
+.site-foot{padding:18px 16px 28px;text-align:center;font-size:12px;opacity:.8}.site-foot a{color:inherit;text-decoration:underline}
+@media (prefers-reduced-motion:no-preference){.consent-banner{animation:consent-in .25s ease-out}@keyframes consent-in{from{transform:translateY(16px);opacity:0}}}

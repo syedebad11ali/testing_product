@@ -3,6 +3,7 @@ import { DEMO_PROPERTIES, DOC_FIELD_DEFS, DOC_REQUIRED_FIELDS } from '../data/do
 import { PROPERTIES } from '../data/properties.js';
 import Extraction from './extraction.js';
 import { state } from '../state/store.js';
+import { maskCnic, sanitizeResultForStorage } from './resultPrivacy.js';
 
 function docNormalize(s){ return (s||'').toString().toLowerCase().replace(/[^a-z0-9]/g,''); }
 
@@ -54,18 +55,18 @@ export function runDocumentChecks(docType, fields, hasFile, fileMeta){
   let ownerMismatch=false, plotMismatch=false;
   if(matchedProperty){
     checks.push({ok:true, text:'A possible matching property was found in available records'});
-    if(fields.ownerName && fields.ownerName.trim()){
+    if(fields.ownerName && fields.ownerName.trim() && !Extraction.isMissingValue(fields.ownerName) && !Extraction.isMissingValue(matchedProperty.owner)){
       if(docNormalize(fields.ownerName)!==docNormalize(matchedProperty.owner)){
         ownerMismatch=true;
         checks.push({ok:false, text:"Owner name differs from the available property record"});
-        reasons.push('Entered owner "'+fields.ownerName+'" does not match the recorded owner "'+matchedProperty.owner+'" for this property.');
+        reasons.push('The entered owner name does not match the name on record for this property.');
       } else checks.push({ok:true, text:'Owner name matches available record'});
     }
-    if(fields.plotNumber && fields.plotNumber.trim()){
+    if(fields.plotNumber && fields.plotNumber.trim() && !Extraction.isMissingValue(fields.plotNumber) && !Extraction.isMissingValue(matchedProperty.plot)){
       if(!docNormalize(matchedProperty.plot).includes(docNormalize(fields.plotNumber))){
         plotMismatch=true;
         checks.push({ok:false, text:'Property reference does not match the available record'});
-        reasons.push('Entered plot/reference "'+fields.plotNumber+'" does not match the recorded reference "'+matchedProperty.plot+'".');
+        reasons.push('The entered plot/reference "'+fields.plotNumber+'" does not match the reference on record.');
       } else checks.push({ok:true, text:'Property reference matches available record'});
     }
   } else {
@@ -104,10 +105,7 @@ export function runDocumentChecks(docType, fields, hasFile, fileMeta){
 /* Automatic verification pipeline (pure functions).
    OCR/PDF text -> Extraction.parseDocumentText -> buildAutomaticResult. Parsed fields are what
    gets shown and compared; nothing is hard-coded. Unit-tested in tests/frontend/. */
-export function maskCnic(digits){
-  if(!digits || digits.length!==13) return digits || '';
-  return digits.slice(0,5)+'-******'+digits.slice(11,12)+'-'+digits.slice(12);
-}
+export { maskCnic, sanitizeResultForStorage };
 
 function extractionToFields(extraction){
   return {
@@ -129,31 +127,30 @@ export function buildAutomaticResult(extraction, fileMeta, source){
   const keyOf = {name:'ownerName', cnic:'cnic', plot:'plotNumber', survey:'surveyNumber', address:'address', approvedArea:'approvedArea', paymentStatus:'paymentStatus'};
   extraction.profile.fields.forEach(f=>{
     const fld = extraction[keyOf[f]];
-    if(fld.conflict) checks.push({ok:false, text:labels[f]+' — conflicting values in the document: '+fld.values.join(' vs ')});
+    if(fld.conflict) checks.push({ok:false, text:labels[f]+' — conflicting values in the document: '+fld.values.map(v=>f==='cnic'?maskCnic(String(v).replace(/[^\d]/g,'')):v).join(' vs ')});
     else if(fld.found) checks.push({ok:true, text:labels[f]+' detected: '+(f==='cnic'?maskCnic(fld.value):fld.display)});
     else checks.push({ok:null, text:labels[f]+' was not detected in the document'});
   });
   const base = {pipeline:'auto', extraction, fields:extractionToFields(extraction), hasFile:true, fileMeta, method:'upload', timestamp:Date.now(), source:source||'ocr'};
 
-  // Find the record to compare against (free search — no property context here).
+  // Record selection and the decision live in Extraction.verifyAgainstRecords: the same function scripts/manifest-report.mjs uses,
+  // so the report cannot drift from what the app does.
   const records = allVerificationRecords();
-  const matchInfo = Extraction.matchProperty(extraction, records);
-  const matched = matchInfo.property;
-
-  const conflicts = ['ownerName','plotNumber','cnic','surveyNumber'].filter(f=>extraction[f].conflict);
-  if(!matched && !conflicts.length){
-    const anyFound = extraction.profile.fields.some(f=>extraction[keyOf[f]].found);
-    if(!anyFound) return Object.assign({}, base, {status:'unable_to_verify', checks, reasons:['No usable information could be read from the document.'], limitations:['Insufficient information was extracted to perform verification.'], matchedPropertyId:null});
+  const d = Extraction.verifyAgainstRecords(extraction, records, {ocr: source!=='pdf-text'});
+  const matched = d.matched;
+  if(d.earlyExit){
+    if(!d.noMatch) return Object.assign({}, base, {status:'unable_to_verify', checks, reasons:d.reasons, limitations:['Insufficient information was extracted to perform verification.'], matchedPropertyId:null});
     checks.push({ok:null, text:'No matching property was found in available records'});
-    return Object.assign({}, base, {status:'not_verified', checks, reasons:['No property in the available records matches the information extracted from this document.'], limitations:['Comparison is limited to the records available in this application.'], matchedPropertyId:null, noMatch:true});
+    return Object.assign({}, base, {status:'not_verified', checks, reasons:d.reasons, limitations:['Comparison is limited to the records available in this application.'], matchedPropertyId:null, noMatch:true});
   }
-  const d = Extraction.decide(extraction, matched, {ocr: source!=='pdf-text'});
   if(d.cmp){
     const lab = {name:'Name', cnic:'CNIC', plot:'Plot number', survey:'Survey number', address:'Address', approvedArea:'Approved area'};
     Object.keys(lab).forEach(k=>{ const st=d.cmp[k]; if(st && st!=='unknown') checks.push({ok: st==='match'?true:(st==='mismatch'||st==='conflict')?false:null, text: lab[k]+(st==='match'?' matches available record':st==='mismatch'?' does not match available record':st==='uncertain'?' could not be confirmed (possible OCR misread)':' — conflicting values')}); });
   }
   const limitations = ['Verified against available application records only. Official authentication has not been performed.'];
-  if(extraction.profile.label==='Power of Attorney') limitations.push('The attorney\'s identity was not checked: no attorney reference exists in the available records.');
+  if(d.status==='verified') limitations.push('"Verified" means every field this document type requires was read from the document and agreed with a record held in this application. It does not prove the document is genuine or unaltered, and it does not confirm legal validity, ownership of the property, or that the document is current or registered with any authority.');
+  if(extraction.profile.label==='Power of Attorney') limitations.push('The legal validity, scope, duration and current status of this power of attorney were not checked. The attorney\'s identity could not be confirmed: no attorney reference exists in the available records. It is only checked for a contradiction when the attorney\'s CNIC appears on a record.');
   if(source!=='pdf-text') limitations.push('Text was read by OCR, which can misread characters; uncertain characters are reported as unable to verify rather than as mismatches.');
   return Object.assign({}, base, {status:d.status, checks, reasons:d.reasons, limitations, matchedPropertyId:matched?matched.id:null});
 }
+

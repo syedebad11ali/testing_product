@@ -2,7 +2,7 @@
 /* Drawer */
 .overlay-bg{position:fixed;inset:0;background:rgba(6,20,18,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;}
 .overlay-bg.show{opacity:1;pointer-events:auto;}
-.drawer{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--surface);z-index:50;transform:translateX(-105%);transition:transform .25s ease;display:flex;flex-direction:column;}
+.drawer{position:fixed;top:90px;left:0;bottom:0;width:78%;max-width:300px;background:var(--surface);z-index:50;transform:translateX(-105%);transition:transform .25s ease;display:flex;flex-direction:column;}
 .drawer.open{transform:translateX(0);}
 .drawer-head{background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;padding:calc(22px + env(safe-area-inset-top,0px)) 20px 22px;border-radius:0 0 26px 0;}
 .drawer-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
@@ -16,6 +16,7 @@
 .drawer-item .chev{margin-left:auto;color:var(--mute);}
 .drawer-foot{padding:14px;}
 .drawer-mission{width:100%;background:var(--teal-100);color:var(--teal-700);border:none;border-radius:14px;padding:13px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;}
+@media(max-width:640px){.drawer{top:73px;}}
 
 /* Chat bubble + panel */
 .chat-fab{position:fixed;right:18px;bottom:calc(22px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;background:var(--teal-700);color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px var(--accent-shadow);z-index:45;}
@@ -26,6 +27,7 @@
 .chat-head h3{margin:0;font-size:19px;}
 .chat-head span{font-size:12px;line-height:1.45;color:var(--sub);}
 .chat-head .icon-btn{position:absolute;top:10px;right:10px;}
+.icon-btn.icon-btn-soft{background:var(--teal-100);color:var(--teal-700);}
 .chat-body{display:flex;flex:1;flex-direction:column;min-height:0;overflow-y:auto;padding:8px 16px calc(16px + env(safe-area-inset-bottom,0px));}
 .chat-today{display:flex;align-items:center;gap:10px;margin:0 0 12px;color:var(--sub);font-size:11px;justify-content:center;}
 .chat-today::before,.chat-today::after{content:"";height:1px;flex:1;background:var(--line);}
@@ -55,3 +57,38 @@
   .chat-head{min-height:156px;padding-top:82px;}
 }
 
+
+/* --- chat: specialist tag, chips, listing cards, actions, feedback --- */
+.chat-specialist{font-size:11px;color:var(--teal-700);font-weight:700;margin:4px 0 2px 4px;}
+.chat-chips,.chat-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px;}
+.chat-chip,.chat-action{min-height:36px;padding:6px 12px;border-radius:999px;border:1px solid var(--teal-700);background:var(--surface);color:var(--teal-700);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.chat-action{background:var(--teal-700);color:#fff;}
+.chat-chip:hover,.chat-chip:focus-visible,.chat-action:focus-visible{outline:2px solid var(--teal-700);outline-offset:2px;}
+.chat-cards{display:grid;gap:8px;margin:8px 0 2px;}
+.chat-card{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);text-decoration:none;}
+.chat-card:hover,.chat-card:focus-visible{border-color:var(--teal-700);outline:none;box-shadow:0 0 0 2px var(--teal-700) inset;}
+.chat-card strong{display:block;font-size:13px;}.chat-card .cc-price{color:var(--teal-700);font-weight:700;font-size:13px;}
+.chat-card ul{margin:6px 0 0;padding-left:16px;font-size:12px;color:var(--text-muted,var(--text));}
+.chat-feedback{display:flex;gap:6px;margin:4px 0 0 4px;}
+.chat-feedback button{min-width:36px;min-height:32px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;}
+.chat-feedback button[aria-pressed="true"]{border-color:var(--teal-700);background:var(--teal-100);}
+.assistant-reset{margin:0 0 8px auto;display:block;min-height:32px;padding:4px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px;cursor:pointer;}
+
+/* Login-required dialog (features/loginPrompt.js). Theme colours come from the :root variables, so light and dark both work.
+   z-index is one above .consent-banner (consent.css) so the prompt is never hidden behind the cookie banner. */
+.login-prompt-bg{position:fixed;inset:0;z-index:2147483001;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(6,20,18,.55);animation:loginPromptFade .18s ease-out;}
+.login-prompt{box-sizing:border-box;width:min(420px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;padding:24px 22px 20px;border-radius:18px;border:1px solid var(--line);background:var(--surface);color:var(--text);box-shadow:0 18px 48px rgba(0,0,0,.28);overflow-wrap:anywhere;animation:loginPromptRise .2s ease-out;}
+.login-prompt-title{margin:0 0 8px;font-size:20px;line-height:1.25;}
+.login-prompt-text{margin:0;font-size:14.5px;line-height:1.5;color:var(--text);}
+.login-prompt-feature{margin:10px 0 0;font-size:12.5px;line-height:1.4;color:var(--sub);}
+.login-prompt-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+.login-prompt-btn{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-height:46px;padding:10px 16px;border-radius:999px;font:inherit;font-weight:700;font-size:14px;text-align:center;text-decoration:none;cursor:pointer;}
+.login-prompt-primary{border:1.5px solid var(--teal-700);background:var(--teal-700);color:#fff;}
+.login-prompt-primary:hover{filter:brightness(1.1);}
+.login-prompt-secondary{border:1.5px solid var(--line);background:transparent;color:var(--text);}
+.login-prompt-secondary:hover{background:var(--teal-100);}
+.login-prompt-btn:focus-visible{outline:3px solid var(--teal-500);outline-offset:3px;}
+@keyframes loginPromptFade{from{opacity:0}to{opacity:1}}
+@keyframes loginPromptRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:360px){.login-prompt-bg{padding:10px}.login-prompt{padding:20px 16px 16px;border-radius:16px}.login-prompt-title{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.login-prompt-bg,.login-prompt{animation:none}.login-prompt-primary:hover{filter:none}}

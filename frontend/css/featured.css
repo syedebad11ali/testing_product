@@ -1,0 +1,45 @@
+/* featured.css — Featured Properties carousel (features/featured.js). Uses the app's theme tokens (light and dark). */
+.fc-root{margin-bottom:22px;--fc-ms:6000ms;--fc-accent:var(--teal-700)}
+[data-theme="dark"] .fc-root{--fc-accent:var(--teal-500)}
+.fc-wrap{display:flex;align-items:center;justify-content:center;gap:16px}
+.fc-slot{flex:0 1 880px;min-width:0}
+.fc-btn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:26px;line-height:1;padding:0 0 3px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s,color .15s}
+.fc-btn:hover,.fc-btn:focus-visible{background:var(--teal-700);border-color:var(--teal-700);color:#fff;transform:scale(1.08)}
+.fc-btn:active{transform:scale(.95)}
+.fc-card{display:grid;grid-template-columns:1.15fr 1fr;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(15,42,61,.12);cursor:pointer;min-height:260px}
+.fc-media{position:relative;min-height:260px;overflow:hidden}
+.fc-media::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.28),rgba(0,0,0,0) 45%);pointer-events:none}
+.fc-card:hover .fc-media{filter:brightness(1.05)}
+.fc-tag{position:absolute;top:14px;left:14px;z-index:1;background:rgba(255,255,255,.95);color:#0f2a3d;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.fc-body{display:flex;flex-direction:column;justify-content:center;gap:8px;padding:24px 26px;min-width:0}
+.fc-title{margin:0;font-size:24px;font-weight:800;line-height:1.2}
+.fc-loc{font-size:14px;color:var(--sub)}
+.fc-price{font-size:28px;font-weight:800;color:var(--fc-accent);margin:4px 0 2px}
+.fc-chips{display:flex;flex-wrap:wrap;gap:8px}
+.fc-chip{background:var(--teal-100);color:var(--text);font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:999px}
+.fc-foot{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.fc-verif{font-size:13px;font-weight:700;color:var(--ok)}
+.fc-cta{border:0;border-radius:12px;padding:13px 18px;min-height:44px;font-size:14.5px;font-weight:700;color:#fff;background:var(--teal-700);cursor:pointer;transition:transform .15s,background .15s}
+.fc-card:hover .fc-cta,.fc-cta:focus-visible{background:var(--teal-600)}
+.fc-cta:active{transform:scale(.98)}
+.fc-dots{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.fc-dot{position:relative;width:10px;height:10px;padding:0;border:0;border-radius:999px;background:rgba(128,128,128,.35);cursor:pointer;overflow:hidden;transition:width .25s}
+.fc-dot.active{width:34px}
+.fc-dot i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);background:var(--fc-accent);border-radius:inherit}
+.fc-dot.active i{animation:fcFill var(--fc-ms) linear forwards}
+.fc-root.paused .fc-dot.active i{animation-play-state:paused}
+.fc-count{margin-left:8px;font-size:12px;font-weight:600;color:var(--sub)}
+.fc-pause{margin-left:8px;min-height:36px;padding:4px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer}
+.fc-pause:hover{border-color:var(--teal-700)}
+.fc-btn:focus-visible,.fc-dot:focus-visible,.fc-cta:focus-visible,.fc-pause:focus-visible{outline:3px solid var(--teal-500);outline-offset:2px}
+@keyframes fcFill{to{transform:scaleX(1)}}
+@media (max-width:760px){
+  .fc-wrap{gap:6px}
+  .fc-btn{width:36px;height:36px;font-size:20px}
+  .fc-card{grid-template-columns:1fr;min-height:0}
+  .fc-media{min-height:0;height:200px}
+  .fc-body{padding:16px 16px 18px}
+  .fc-title{font-size:19px}.fc-price{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){.fc-dot.active i{animation:none;transform:scaleX(1)}.fc-btn,.fc-cta,.fc-dot{transition:none}}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
