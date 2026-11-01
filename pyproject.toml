@@ -41,7 +41,7 @@ dependencies = [
 
     # --- Price model and data (versions locked to the serialised model) --------
     "pandas==3.0.2",
-    "numpy==2.4.4",
+    "numpy==2.5.4",
     "scikit-learn==1.9.1",
     "scipy==1.17.1",
     "joblib==1.5.3",
