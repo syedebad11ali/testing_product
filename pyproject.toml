@@ -24,7 +24,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     # --- Web framework and config ---------------------------------------------
     "Flask==3.1.3",                # HTTP app, blueprints (backend/app.py, backend/api/*)
-    "python-dotenv==1.2.2",        # loads .env for local development (backend/config.py)
+    "python-dotenv==1.2.4",        # loads .env for local development (backend/config.py)
 
     # --- AI engines: OpenAI Agents SDK managing Gemini + OpenAI ----------------
     "openai-agents>=0.23,<1",      # PIN ME. `from agents import Agent, Runner, ...` agents, handoffs, guardrails, tools
@@ -54,7 +54,7 @@ dev = [
     "ruff>=0.6",                   # PIN ME. lint + format (Python)
     "bandit>=1.7",                 # PIN ME. static security scan (bandit -r backend)
     "pip-audit>=2.7",              # PIN ME. known-vulnerability scan of installed packages
-    "playwright==1.56.0",          # Pinned (session 17: Python 3.12.3 + Chromium, every tests/browser/*.py passed). browser smoke tests (tests/browser/smoke.py)
+    "playwright==1.64.1",          # Pinned (session 17: Python 3.12.3 + Chromium, every tests/browser/*.py passed). browser smoke tests (tests/browser/smoke.py)
 ]
 # Optional: only if you decide to switch password hashing from stdlib scrypt to argon2id.
 argon2 = [
